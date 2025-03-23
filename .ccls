@@ -1,0 +1,3 @@
+clang
+%c -std=c99
+-I./src/common
