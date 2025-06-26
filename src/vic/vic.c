@@ -1,6 +1,6 @@
-#define STC_IMPLEMENTATION
-#define STC_STRIP_PREFIX
-#include <stc.h> 
+#define CHIMERA_IMPLEMENTATION
+#define CHIMERA_STRIP_PREFIX
+#include <chimera.h> 
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -141,6 +141,51 @@ void vm_next(VM *vm) {
       vm_push(vm, a + b);
       break;
     }
+    case OP_SUB_REG: {
+      Register dest = vm_read(vm);
+      Register src = vm_read(vm);
+      assert(dest >= REG_A && dest <= REG_Z);
+      assert(src >= REG_A && src <= REG_Z);
+      vm->regs[dest] = vm->regs[dest] - vm->regs[src];
+      break;
+    }
+    case OP_SUB_STACK: {
+      assert(vm->sp > 0);
+      uint64_t a = vm->stack[vm->sp];
+      uint64_t b = vm->stack[vm->sp - 1];
+      vm_push(vm, a - b);
+      break;
+    }
+    case OP_MULT_REG: {
+      Register dest = vm_read(vm);
+      Register src = vm_read(vm);
+      assert(dest >= REG_A && dest <= REG_Z);
+      assert(src >= REG_A && src <= REG_Z);
+      vm->regs[dest] = vm->regs[dest] * vm->regs[src];
+      break;
+    }
+    case OP_MULT_STACK: {
+      assert(vm->sp > 0);
+      uint64_t a = vm->stack[vm->sp];
+      uint64_t b = vm->stack[vm->sp - 1];
+      vm_push(vm, a * b);
+      break;
+    }
+    case OP_DIV_REG: {
+      Register dest = vm_read(vm);
+      Register src = vm_read(vm);
+      assert(dest >= REG_A && dest <= REG_Z);
+      assert(src >= REG_A && src <= REG_Z);
+      vm->regs[dest] = vm->regs[dest] / vm->regs[src];
+      break;
+    }
+    case OP_DIV_STACK: {
+      assert(vm->sp > 0);
+      uint64_t a = vm->stack[vm->sp];
+      uint64_t b = vm->stack[vm->sp - 1];
+      vm_push(vm, a / b);
+      break;
+    }
     case OP_LOAD_REG: {
       uint64_t reg = vm_read(vm);
       uint64_t val = vm_read(vm);
@@ -199,7 +244,7 @@ int main(int argc, char *argv[]) {
 
   da_push(&vm.program, OP_LOAD_REG);
   da_push(&vm.program, REG_Z);
-  da_push(&vm.program, 0xFFF);
+  da_push(&vm.program, 0xFFFF);
 
   da_push(&vm.program, OP_ADD_REG);
   da_push(&vm.program, REG_A);
@@ -209,7 +254,7 @@ int main(int argc, char *argv[]) {
   da_push(&vm.program, REG_A);
   da_push(&vm.program, REG_Z);
 
-  // for ASM: jne could just be this (NOTE assembler would need to track the count of instructions)
+  //NOTE:  for ASM: jne could just be this
   da_push(&vm.program, OP_JE);
   da_push(&vm.program, vm.program.count + 3);
 

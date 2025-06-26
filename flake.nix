@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    stc.url = "github:secretval/stc";
+    chimera.url = "github:secretval/chimera";
   };
 
   outputs = inputs @ {flake-parts, ...}:
@@ -14,31 +14,17 @@
         self',
         pkgs,
         ...
-      }: let
-        name = "c";
-        version = "0.1.0";
-      in {
+      }:  {
         devShells.default = pkgs.mkShell {
-          inputsFrom = [self'.packages.default];
+            inputsFrom = [
+              self'.packages.vic
+              self'.packages.vism
+            ];
         };
 
-        packages = {
-          default = pkgs.stdenv.mkDerivation {
-            inherit version;
-            pname = name;
-            src = ./.;
-
-            buildInputs = with pkgs; [gcc inputs.stc.packages.${system}.default];
-
-            buildPhase = ''
-              gcc -o ${name} main.c
-            '';
-
-            installPhase = ''
-              mkdir -p $out/bin
-              mv ${name} $out/bin
-            '';
-          };
+          packages = {
+            vic  = pkgs.callPackage ./lib/buildPackage.nix {name = "vic"; version  = "0.0.1";chimera = inputs.chimera;};
+            vism = pkgs.callPackage ./lib/buildPackage.nix {name = "vism"; version = "0.0.1";chimera = inputs.chimera;};
         };
       };
     };

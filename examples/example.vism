@@ -1,0 +1,5 @@
+push 1
+pop B
+load A 2
+push A
+push B

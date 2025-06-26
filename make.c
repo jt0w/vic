@@ -1,6 +1,6 @@
-#define STC_IMPLEMENTATION
-#define STC_STRIP_PREFIX
-#include <stc.h> 
+#define CHIMERA_IMPLEMENTATION
+#define CHIMERA_STRIP_PREFIX
+#include <chimera.h> 
 #include <stdbool.h> 
 
 #define build_dir "build/"
@@ -18,12 +18,17 @@ const Tool TOOLS[] = {
     .src = src_dir "vic/vic.c",
     .out = build_dir "vic"
   },
+  {
+    .name = "vism",
+    .src = src_dir "vism/vism.c " src_dir "vism/lexer.c ",
+    .out = build_dir "vism"
+  },
 };
 
 int build_tool(Tool tool) {
   Cmd cmd = {0};
   cmd_push(&cmd, "gcc", "-std=c99", "-I./src/common");
-  cmd_push(&cmd, "-Wall", "-Werror", "-pedantic", "-ggdb");
+  cmd_push(&cmd, "-Wall", /*"-pedantic"*/ "-ggdb");
   cmd_push(&cmd, "-o", tool.out);
   cmd_push(&cmd, tool.src);
   return cmd_exec(&cmd);
@@ -51,19 +56,20 @@ int main(int argc, char **argv) {
         break;
       }
     }
+
     if (!valid_arg) {
-      log(STC_ERROR, "Not a valid tool %s", arg);
+      log(CHIMERA_ERROR, "Not a valid tool %s", arg);
       return 0;
     }
     
   } else {
     StringBuilder sb = {0};
     for (size_t i = 0; i < sizeof(TOOLS) / sizeof(TOOLS[0]); ++i) {
-      log(STC_INFO, "Compiling %s", TOOLS[i].name);
+      log(CHIMERA_INFO, "Compiling %s", TOOLS[i].name);
       if (build_tool(TOOLS[i]) == 0) 
-        log(STC_INFO, "Compiled %s", TOOLS[i].name);
+        log(CHIMERA_INFO, "Compiled %s", TOOLS[i].name);
       else 
-        log(STC_ERROR, "Error while compiling %s", TOOLS[i].name);
+        log(CHIMERA_ERROR, "Error while compiling %s", TOOLS[i].name);
     }
   }
 }
