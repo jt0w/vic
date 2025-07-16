@@ -1,7 +1,7 @@
 #ifndef _VM_H
 #define _VM_H
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 typedef enum {
   OP_NOP = 0x0,  // 0
@@ -28,10 +28,37 @@ typedef enum {
 } OpCode;
 
 #define REG_COUNT 26
-typedef enum { REG_A,REG_B,REG_C,REG_D,REG_E,REG_F,REG_G,REG_H,REG_I,REG_J,REG_K,REG_L,REG_M,REG_N,REG_O,REG_P,REG_Q,REG_R,REG_S,REG_T,REG_U,REG_V,REG_W,REG_X,REG_Y,REG_Z } Register;
+typedef enum {
+  REG_A,
+  REG_B,
+  REG_C,
+  REG_D,
+  REG_E,
+  REG_F,
+  REG_G,
+  REG_H,
+  REG_I,
+  REG_J,
+  REG_K,
+  REG_L,
+  REG_M,
+  REG_N,
+  REG_O,
+  REG_P,
+  REG_Q,
+  REG_R,
+  REG_S,
+  REG_T,
+  REG_U,
+  REG_V,
+  REG_W,
+  REG_X,
+  REG_Y,
+  REG_Z
+} Register;
 
 #define FLAG_COUNT 2
-typedef enum  { FLAG_CF, FLAG_ZF } Flag;
+typedef enum { FLAG_CF, FLAG_ZF } Flag;
 
 typedef struct {
   uint64_t *items;

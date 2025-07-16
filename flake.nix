@@ -20,6 +20,7 @@
               self'.packages.vic
               self'.packages.vism
             ];
+            buildInputs = with pkgs; [uncrustify];
         };
 
           packages = {

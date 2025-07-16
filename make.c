@@ -20,7 +20,9 @@ const Tool TOOLS[] = {
   },
   {
     .name = "vism",
-    .src = src_dir "vism/vism.c " src_dir "vism/lexer.c ",
+    .src = src_dir "vism/vism.c "
+           src_dir "vism/lexer.c "
+           src_dir "vism/parser.c ",
     .out = build_dir "vism"
   },
 };
@@ -71,5 +73,5 @@ int main(int argc, char **argv) {
       else 
         log(CHIMERA_ERROR, "Error while compiling %s", TOOLS[i].name);
     }
-  }
+  };
 }
