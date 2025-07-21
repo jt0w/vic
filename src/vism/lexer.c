@@ -1,10 +1,13 @@
 #include "lexer.h"
 
-char *print_token(Token t) {
+char *print_token(Token t, bool all_info) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {
     if (TK_MAP[i].kind == t.kind) {
-      return temp_sprintf("%zu: %s = `%s`", t.span.pos.row, TK_MAP[i].id,
+      if (all_info)
+        return temp_sprintf("%zu: %s = `%s`", t.span.pos.row, TK_MAP[i].id,
                           t.span.literal);
+      else 
+        return temp_sprintf("`%s`", TK_MAP[i].id);
     }
   }
 

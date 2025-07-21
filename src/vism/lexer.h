@@ -3,6 +3,7 @@
 #define CHIMERA_STRIP_PREFIX
 #include <chimera.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 typedef struct {
   size_t row;
@@ -78,7 +79,7 @@ typedef struct {
   TokenKind kind;
 } Token;
 
-char *print_token(Token t);
+char *print_token(Token t, bool with_value);
 
 typedef struct {
   Token *items;

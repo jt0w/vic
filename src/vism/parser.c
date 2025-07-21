@@ -3,7 +3,6 @@
 bool par_raw_consume(Parser *parser) {
   parser->current = parser->tokens.items[parser->pos++];
   return parser->current.kind == TK_WHITESPACE;
-  ;
 }
 
 Token par_consume(Parser *parser) {
@@ -17,25 +16,34 @@ Token par_consume(Parser *parser) {
 Token par_expect(Parser *parser, ...) {
   Token t;
   StringBuilder expected = {0};
-  da_push_buf(&expected, "[");
+  da_push(&expected, '[');
   va_list args;
   va_start(args, parser);
   for (TokenKind tk = va_arg(args, TokenKind); tk != END;
   tk = va_arg(args, TokenKind)) {
-    da_push_buf(&expected, print_token((Token){.kind = tk}));
-    if (parser->current.kind == tk) { // Compare with the current token
+    da_push_buf(&expected, temp_sprintf("%s ,", print_token((Token){.kind = tk}, false)));
+    if (parser->current.kind == tk) {
       t = parser->current;
-      par_consume(parser); // Consume the token if it matches
+      par_consume(parser);
       va_end(args);
       return t;
     }
   }
+  da_push(&expected, '\b');
+  da_push(&expected, '\b');
+  da_push(&expected, ']');
+  da_push(&expected, '\0');
 
-  da_push_buf(&expected, "]");
-  fprintf(stderr, "%s:%zu:%zu: error: expected '%s' but got '%s'\n",
+
+  StringBuilder sb = {0};
+  if (parser->current.kind == TK_ERR)
+    da_push_buf(&sb, "Nothing");
+  else
+    da_push_buf(&sb, print_token(parser->current, false));
+  fprintf(stderr, "%s:%zu:%zu: error: expected (one of) '%s' but got %s\n",
           parser->file, parser->current.span.pos.row,
           parser->current.span.pos.col, expected.items,
-          print_token(parser->current));
+          sb.items);
   exit(1);
 }
 
