@@ -4,27 +4,27 @@
 #include <stdio.h>
 
 typedef enum {
-  OP_NOP = 0x0,  // 0
-  OP_PUSH,       // 1
-  OP_POP,        // 2
-  OP_LOAD_REG,   // 3
-  OP_PUSH_REG,   // 4
-  OP_ADD_STACK,  // 5
-  OP_ADD_REG,    // 6
-  OP_SUB_STACK,  // 7
-  OP_SUB_REG,    // 8
-  OP_MULT_STACK, // 9
-  OP_MULT_REG,   // 10
-  OP_DIV_STACK,  // 11
-  OP_DIV_REG,    // 12
-  OP_CMP_REG,    // 13
-  OP_CMP_STACK,  // 14
-  OP_JMP,        // 15
-  OP_JE,         // 16
-  OP_JGE,        // 17
-  OP_JG,         // 18
-  OP_JLE,        // 19
-  OP_JL,         // 20
+  OP_NOP = 0x0,
+  OP_PUSH,
+  OP_PUSH_REG,
+  OP_POP_REG,
+
+  OP_LOAD,
+  OP_LOAD_REG,
+
+  OP_ADD,
+  OP_SUB,
+  OP_MULT,
+  OP_DIV,
+
+  OP_CMP,
+
+  OP_JMP,
+  OP_JE,
+  OP_JGE,
+  OP_JG,
+  OP_JLE,
+  OP_JL,
 } OpCode;
 
 #define REG_COUNT 26
@@ -65,4 +65,5 @@ typedef struct {
   size_t count;
   size_t cap;
 } Program;
+
 #endif // _VM_H

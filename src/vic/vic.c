@@ -39,13 +39,15 @@ uint64_t vm_pop(VM *vm, Register reg) {
   return res;
 }
 
-inline void vm_load_reg(VM *vm, Register reg, uint64_t val) {
+inline void vm_load(VM *vm, Register reg, uint64_t val) {
   vm->regs[reg] = val;
 }
 
+inline void vm_load_reg(VM *vm, Register dest, Register src) {
+  vm->regs[dest] = vm->regs[src];
+}
 bool vm_push_reg(VM *vm, Register reg) { return vm_push(vm, vm->regs[reg]); }
 
-// TODO: COMPARING
 static inline void compare(VM *vm, uint64_t a, uint64_t b) {
   uint64_t res = a - b;
   if (res == 0)
@@ -111,123 +113,98 @@ void vm_next(VM *vm) {
   uint64_t inst = vm_read(vm);
   /*println("%zu => %u", vm->pc-1, (unsigned int)inst); */
   switch (inst) {
-  case OP_NOP:
-    break;
-  case OP_PUSH: {
-    uint64_t val = vm_read(vm);
-    if (!vm_push(vm, val)) {
-      fprintln(stderr, "stack overflow");
-      exit(1);
+    case OP_NOP:
+      break;
+    case OP_PUSH: {
+      uint64_t val = vm_read(vm);
+      if (!vm_push(vm, val)) {
+        fprintln(stderr, "stack overflow");
+        exit(1);
+      }
+      break;
     }
-    break;
-  }
-  case OP_POP: {
-    uint64_t reg = vm_read(vm);
-    assert(reg >= REG_A && reg <= REG_Z);
-    vm_pop(vm, reg);
-    break;
-  }
-  case OP_ADD_REG: {
-    Register dest = vm_read(vm);
-    Register src = vm_read(vm);
-    assert(dest >= REG_A && dest <= REG_Z);
-    assert(src >= REG_A && src <= REG_Z);
-    vm->regs[dest] = vm->regs[dest] + vm->regs[src];
-    break;
-  }
-  case OP_ADD_STACK: {
-    assert(vm->sp > 0);
-    uint64_t a = vm->stack[vm->sp];
-    uint64_t b = vm->stack[vm->sp - 1];
-    vm_push(vm, a + b);
-    break;
-  }
-  case OP_SUB_REG: {
-    Register dest = vm_read(vm);
-    Register src = vm_read(vm);
-    assert(dest >= REG_A && dest <= REG_Z);
-    assert(src >= REG_A && src <= REG_Z);
-    vm->regs[dest] = vm->regs[dest] - vm->regs[src];
-    break;
-  }
-  case OP_SUB_STACK: {
-    assert(vm->sp > 0);
-    uint64_t a = vm->stack[vm->sp];
-    uint64_t b = vm->stack[vm->sp - 1];
-    vm_push(vm, a - b);
-    break;
-  }
-  case OP_MULT_REG: {
-    Register dest = vm_read(vm);
-    Register src = vm_read(vm);
-    assert(dest >= REG_A && dest <= REG_Z);
-    assert(src >= REG_A && src <= REG_Z);
-    vm->regs[dest] = vm->regs[dest] * vm->regs[src];
-    break;
-  }
-  case OP_MULT_STACK: {
-    assert(vm->sp > 0);
-    uint64_t a = vm->stack[vm->sp];
-    uint64_t b = vm->stack[vm->sp - 1];
-    vm_push(vm, a * b);
-    break;
-  }
-  case OP_DIV_REG: {
-    Register dest = vm_read(vm);
-    Register src = vm_read(vm);
-    assert(dest >= REG_A && dest <= REG_Z);
-    assert(src >= REG_A && src <= REG_Z);
-    vm->regs[dest] = vm->regs[dest] / vm->regs[src];
-    break;
-  }
-  case OP_DIV_STACK: {
-    assert(vm->sp > 0);
-    uint64_t a = vm->stack[vm->sp];
-    uint64_t b = vm->stack[vm->sp - 1];
-    vm_push(vm, a / b);
-    break;
-  }
-  case OP_LOAD_REG: {
-    uint64_t reg = vm_read(vm);
-    uint64_t val = vm_read(vm);
-    vm_load_reg(vm, reg, val);
-    break;
-  }
-  case OP_PUSH_REG: {
-    uint64_t reg = vm_read(vm);
-    vm_push_reg(vm, reg);
-    break;
-  }
-  case OP_CMP_REG: {
-    uint64_t a = vm_read(vm);
-    uint64_t b = vm_read(vm);
-    assert(a >= REG_A && a <= REG_Z);
-    assert(b >= REG_A && b <= REG_Z);
-    vm_cmp_reg(vm, a, b);
-    break;
-  }
-  case OP_CMP_STACK:
-    vm_cmp_stack(vm);
-    break;
-  case OP_JMP: {
-    uint64_t dest = vm_read(vm);
-    if (!vm_jmp(vm, dest)) {
-      fprintln(stderr, "invalid jump dest");
-      exit(1);
+    case OP_POP_REG: {
+      uint64_t reg = vm_read(vm);
+      assert(reg >= REG_A && reg <= REG_Z);
+      vm_pop(vm, reg);
+      break;
     }
-    break;
-  }
-  case OP_JE: {
-    uint64_t dest = vm_read(vm);
-    if (!vm_je(vm, dest)) {
-      fprintln(stderr, "invalid jump dest");
-      exit(1);
+    case OP_ADD: {
+      Register dest = vm_read(vm);
+      Register src = vm_read(vm);
+      assert(dest >= REG_A && dest <= REG_Z);
+      assert(src >= REG_A && src <= REG_Z);
+      vm->regs[dest] = vm->regs[dest] + vm->regs[src];
+      break;
     }
-    break;
-  }
-  default:
-    todo(temp_sprintf("vm_next invalid opcode %u %zu", (unsigned int)inst,
-                      vm->pc));
+    case OP_SUB: {
+      Register dest = vm_read(vm);
+      Register src = vm_read(vm);
+      assert(dest >= REG_A && dest <= REG_Z);
+      assert(src >= REG_A && src <= REG_Z);
+      vm->regs[dest] = vm->regs[dest] - vm->regs[src];
+      break;
+    }
+    case OP_MULT: {
+      Register dest = vm_read(vm);
+      Register src = vm_read(vm);
+      assert(dest >= REG_A && dest <= REG_Z);
+      assert(src >= REG_A && src <= REG_Z);
+      vm->regs[dest] = vm->regs[dest] * vm->regs[src];
+      break;
+    }
+    case OP_DIV: {
+      Register dest = vm_read(vm);
+      Register src = vm_read(vm);
+      assert(dest >= REG_A && dest <= REG_Z);
+      assert(src >= REG_A && src <= REG_Z);
+      vm->regs[dest] = vm->regs[dest] / vm->regs[src];
+      break;
+    }
+    case OP_LOAD: {
+      uint64_t reg = vm_read(vm);
+      uint64_t val = vm_read(vm);
+      vm_load(vm, reg, val);
+      break;
+    }
+    case OP_LOAD_REG: {
+      uint64_t dest = vm_read(vm);
+      uint64_t src = vm_read(vm);
+      vm_load_reg(vm, dest, src);
+      break;
+    }
+    case OP_PUSH_REG: {
+      uint64_t reg = vm_read(vm);
+      vm_push_reg(vm, reg);
+      break;
+    }
+    case OP_CMP: {
+      uint64_t a = vm_read(vm);
+      uint64_t b = vm_read(vm);
+      assert(a >= REG_A && a <= REG_Z);
+      assert(b >= REG_A && b <= REG_Z);
+      vm_cmp_reg(vm, a, b);
+      break;
+    }
+    case OP_JMP: {
+      uint64_t dest = vm_read(vm);
+      if (!vm_jmp(vm, dest)) {
+        fprintln(stderr, "invalid jump dest");
+        exit(1);
+      }
+      break;
+    }
+    case OP_JE: {
+      uint64_t dest = vm_read(vm);
+      if (!vm_je(vm, dest)) {
+        fprintln(stderr, "invalid jump dest");
+        exit(1);
+      }
+      break;
+    }
+    default:
+      todo(temp_sprintf("vm_next invalid opcode %u %zu", (unsigned int)inst,
+                        vm->pc));
   }
 }
 
@@ -237,39 +214,29 @@ int main(int argc, char *argv[]) {
   vm.flags[FLAG_ZF] = -1;
   vm.flags[FLAG_CF] = -1;
 
-  da_push(&vm.program, OP_LOAD_REG);
-  da_push(&vm.program, REG_A);
-  da_push(&vm.program, 0x1);
+  shift(argv, argc);
 
-  da_push(&vm.program, OP_LOAD_REG);
-  da_push(&vm.program, REG_B);
-  da_push(&vm.program, 0x1);
+  if (argc != 1) {
+    fprintln(stderr, "Usage: vic <file>");
+    fprintln(stderr, "ERROR: Did not provide any args");
+    return 1;
+  }
 
-  da_push(&vm.program, OP_LOAD_REG);
-  da_push(&vm.program, REG_Z);
-  da_push(&vm.program, 0xFFFF);
+  char *file_name = shift(argv, argc);
+  FILE *file = fopen(file_name, "rb");
+  if (file == NULL) {
+    fprintln(stderr, "ERROR: File not found");
+    return 1;
+  }
 
-  da_push(&vm.program, OP_ADD_REG);
-  da_push(&vm.program, REG_A);
-  da_push(&vm.program, REG_B);
+  uint64_t value;
 
-  da_push(&vm.program, OP_CMP_REG);
-  da_push(&vm.program, REG_A);
-  da_push(&vm.program, REG_Z);
-
-  // NOTE:  for ASM: jne could just be this
-  da_push(&vm.program, OP_JE);
-  da_push(&vm.program, vm.program.count + 3);
-
-  da_push(&vm.program, OP_JMP);
-  da_push(&vm.program, 9);
-
-  da_push(&vm.program, OP_NOP);
+  while (fread(&value, sizeof(uint64_t), 1, file) == 1) {
+    da_push(&vm.program, value);
+  }
 
   while (vm.pc <= vm.program.count)
     vm_next(&vm);
-
-  println("Did %u iterations", (unsigned int)vm.regs[REG_A]);
 
   return 0;
 }

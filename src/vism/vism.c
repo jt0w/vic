@@ -5,6 +5,7 @@
 
 #include "lexer.h"
 #include "parser.h"
+#include "gen.h"
 
 #include <vm.h>
 
@@ -21,10 +22,8 @@ int main(int argc, char *argv[]) {
   read_file(file, &sb);
   Lexer lexer = {.input = sb.items, .cpos = (Position){1, 1}, .file = file};
   Tokens tokens = {0};
-  while (lexer.pos < sb.count) {
+  while (lexer.pos < sb.count)
     da_push(&tokens, next_token(&lexer));
-    println("%s", print_token(tokens.items[tokens.count - 1], true));
-  }
   Parser parser = {
       .tokens = tokens,
       .file = file,
@@ -34,8 +33,15 @@ int main(int argc, char *argv[]) {
     Expr temp = parse_expr(&parser);
     da_push(&exprs, temp);
   }
-  da_free(sb);
-  da_free(tokens);
-  da_free(exprs);
+  Gen gen = {.exprs = exprs};
+  Program program = {0};
+  while (gen.pos <= gen.exprs.count) {
+    Program temp = gen_parse_expr(&gen);
+    for (size_t i = 0; i < temp.count; ++i) da_push(&program, temp.items[i]);
+  }
+  FILE *bfile = fopen("data.bin", "wb");
+  assert(bfile != NULL);
+  fwrite(program.items, sizeof(uint64_t), program.count, bfile);
+  fclose(bfile);
   return 0;
 }

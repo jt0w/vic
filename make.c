@@ -22,7 +22,8 @@ const Tool TOOLS[] = {
     .name = "vism",
     .src = src_dir "vism/vism.c "
            src_dir "vism/lexer.c "
-           src_dir "vism/parser.c ",
+           src_dir "vism/parser.c "
+           src_dir "vism/gen.c ",
     .out = build_dir "vism"
   },
 };

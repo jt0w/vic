@@ -40,7 +40,7 @@ Token par_expect(Parser *parser, ...) {
     da_push_buf(&sb, "Nothing");
   else
     da_push_buf(&sb, print_token(parser->current, false));
-  fprintf(stderr, "%s:%zu:%zu: error: expected (one of) '%s' but got %s\n",
+  fprintf(stderr, "%s:%zu:%zu: error: expected (one of) '%s' but got %s \n",
           parser->file, parser->current.span.pos.row,
           parser->current.span.pos.col, expected.items,
           sb.items);
@@ -54,15 +54,13 @@ do {                                                                         \
   Token rhs = par_expect(parser, TK_INT_LIT, TK_LIT, END);                   \
   da_push(&expr.args, lhs);                                                  \
   da_push(&expr.args, rhs);                                                  \
-  break;                                                                     \
 } while (0);
 
 #define JUMP_OP()                                                            \
-do {                                                                         \
+do {                                                                       \
   par_consume(parser);                                                       \
   Token arg = par_expect(parser, TK_INT_LIT, /*TK_LIT TODO: Labels*/ END);   \
   da_push(&expr.args, arg);                                                  \
-  break;                                                                     \
 } while (0);
 
 Expr parse_expr(Parser *parser) {
@@ -113,7 +111,6 @@ Expr parse_expr(Parser *parser) {
       da_push(&expr.args, arg);
       break;
     }
-
     case TK_LOAD: {
       expr.kind = EK_LOAD;
       par_consume(parser);
@@ -125,19 +122,23 @@ Expr parse_expr(Parser *parser) {
     }
     case TK_ADD: {
       expr.kind = EK_ADD;
-      BIN_OP()
+      BIN_OP();
+      break;
     }
     case TK_SUB: {
       expr.kind = EK_SUB;
       BIN_OP()
+      break;
     }
     case TK_MULT: {
       expr.kind = EK_MULT;
       BIN_OP()
+      break;
     }
     case TK_DIV: {
       expr.kind = EK_DIV;
       BIN_OP()
+      break;
     }
     case TK_CMP: {
       expr.kind = EK_CMP;
@@ -150,27 +151,33 @@ Expr parse_expr(Parser *parser) {
     }
     case TK_JMP: {
       expr.kind = EK_JMP;
-      JUMP_OP()
+      JUMP_OP();
+      break;
     }
     case TK_JE: {
       expr.kind = EK_JE;
-      JUMP_OP()
+      JUMP_OP();
+      break;
     }
     case TK_JG: {
       expr.kind = EK_JG;
-      JUMP_OP()
+      JUMP_OP();
+      break;
     }
     case TK_JLE: {
       expr.kind = EK_JLE;
-      JUMP_OP()
+      JUMP_OP();
+      break;
     }
     case TK_JL: {
       expr.kind = EK_JL;
-      JUMP_OP()
+      JUMP_OP();
+      break;
     }
     case TK_JGE: {
       expr.kind = EK_JGE;
-      JUMP_OP()
+      JUMP_OP();
+      break;
     }
     default: {
       todo("not implemented");
