@@ -10,30 +10,30 @@
 typedef struct {
   size_t count;
   size_t cap;
-  int64_t *items;
+  uint64_t *items;
 } Stack;
 
 typedef struct {
   Program program;
   Stack stack;
-  int64_t regs[REG_COUNT];
-  int64_t flags[FLAG_COUNT];
+  uint64_t regs[REG_COUNT];
+  uint64_t flags[FLAG_COUNT];
 
   size_t pc;
 } VM;
 
-bool vm_push(VM *vm, int64_t val) {
+bool vm_push(VM *vm, uint64_t val) {
   vm->regs[REG_SP]++;
   da_push(&vm->stack, val);
   return true;
 }
 
-int64_t vm_pop(VM *vm, Register reg) {
+uint64_t vm_pop(VM *vm, Register reg) {
   if (vm->regs[REG_SP] == 0) {
     fprintf(stderr, "error: stack underflow\n");
     exit(1);
   }
-  int64_t res = vm->stack.items[vm->regs[REG_SP-1]];
+  uint64_t res = vm->stack.items[vm->regs[REG_SP-1]];
   vm->regs[reg] = res;
   vm->stack.items[vm->regs[REG_SP]] = 0;
   vm->regs[REG_SP]--;
@@ -41,7 +41,7 @@ int64_t vm_pop(VM *vm, Register reg) {
   return res;
 }
 
-inline void vm_load(VM *vm, Register reg, int64_t val) {
+inline void vm_load(VM *vm, Register reg, uint64_t val) {
   vm->regs[reg] = val;
 }
 
@@ -50,8 +50,8 @@ inline void vm_load_reg(VM *vm, Register dest, Register src) {
 }
 bool vm_push_reg(VM *vm, Register reg) { return vm_push(vm, vm->regs[reg]); }
 
-static inline void compare(VM *vm, int64_t a, int64_t b) {
-  int64_t res = a - b;
+static inline void compare(VM *vm, uint64_t a, int64_t b) {
+  uint64_t res = a - b;
   if (res == 0)
     vm->flags[FLAG_ZF] = 0;
   if (res < 0)
@@ -61,63 +61,63 @@ static inline void compare(VM *vm, int64_t a, int64_t b) {
 }
 
 static inline void vm_cmp_reg(VM *vm, Register ra, Register rb) {
-  int64_t a = vm->regs[ra];
-  int64_t b = vm->regs[rb];
+  uint64_t a = vm->regs[ra];
+  uint64_t b = vm->regs[rb];
   compare(vm, a, b);
 }
 
 static inline void vm_cmp_stack(VM *vm) {
-  int64_t a = vm->stack.items[vm->regs[REG_SP]];
-  int64_t b = vm->stack.items[vm->regs[REG_SP] - 1];
+  uint64_t a = vm->stack.items[vm->regs[REG_SP]];
+  uint64_t b = vm->stack.items[vm->regs[REG_SP] - 1];
   compare(vm, a, b);
 }
 
-bool vm_jmp(VM *vm, int64_t dest) {
+bool vm_jmp(VM *vm, uint64_t dest) {
   if (dest > vm->program.count || dest < 0)
     return false;
   vm->pc = dest;
   return true;
 }
 
-bool vm_je(VM *vm, int64_t dest) {
+bool vm_je(VM *vm, uint64_t dest) {
   if (vm->flags[FLAG_ZF] == 0)
     return vm_jmp(vm, dest);
   return true;
 }
 
-bool vm_jg(VM *vm, int64_t dest) {
+bool vm_jg(VM *vm, uint64_t dest) {
   if (vm->flags[FLAG_CF])
     return vm_jmp(vm, dest);
   return false;
 }
 
-bool vm_jge(VM *vm, int64_t dest) {
+bool vm_jge(VM *vm, uint64_t dest) {
   return vm_je(vm, dest) || vm_jg(vm, dest);
 }
 
-bool vm_jl(VM *vm, int64_t dest) {
+bool vm_jl(VM *vm, uint64_t dest) {
   if (!vm->flags[FLAG_CF])
     return vm_jmp(vm, dest);
   return false;
 }
 
-bool vm_jle(VM *vm, int64_t dest) {
+bool vm_jle(VM *vm, uint64_t dest) {
   return vm_je(vm, dest) || vm_jl(vm, dest);
 }
 
-inline static int64_t vm_read(VM *vm) {
-  int64_t inst = vm->program.items[vm->pc];
+inline static uint64_t vm_read(VM *vm) {
+  uint64_t inst = vm->program.items[vm->pc];
   vm->pc++;
   return inst;
 }
 
 void vm_next(VM *vm) {
-  int64_t inst = vm_read(vm);
+  uint64_t inst = vm_read(vm);
   switch (inst) {
     case OP_NOP:
       break;
     case OP_PUSH: {
-      int64_t val = vm_read(vm);
+      uint64_t val = vm_read(vm);
       if (!vm_push(vm, val)) {
         fprintln(stderr, "stack overflow");
         exit(1);
@@ -125,7 +125,7 @@ void vm_next(VM *vm) {
       break;
     }
     case OP_POP_REG: {
-      int64_t reg = vm_read(vm);
+      uint64_t reg = vm_read(vm);
       assert(reg >= REG_A && reg <= REG_Z);
       vm_pop(vm, reg);
       break;
@@ -163,32 +163,32 @@ void vm_next(VM *vm) {
       break;
     }
     case OP_LOAD: {
-      int64_t reg = vm_read(vm);
-      int64_t val = vm_read(vm);
+      uint64_t reg = vm_read(vm);
+      uint64_t val = vm_read(vm);
       vm_load(vm, reg, val);
       break;
     }
     case OP_LOAD_REG: {
-      int64_t dest = vm_read(vm);
-      int64_t src = vm_read(vm);
+      uint64_t dest = vm_read(vm);
+      uint64_t src = vm_read(vm);
       vm_load_reg(vm, dest, src);
       break;
     }
     case OP_PUSH_REG: {
-      int64_t reg = vm_read(vm);
+      uint64_t reg = vm_read(vm);
       vm_push_reg(vm, reg);
       break;
     }
     case OP_CMP: {
-      int64_t a = vm_read(vm);
-      int64_t b = vm_read(vm);
+      uint64_t a = vm_read(vm);
+      uint64_t b = vm_read(vm);
       assert(a >= REG_A && a <= REG_Z);
       assert(b >= REG_A && b <= REG_Z);
       vm_cmp_reg(vm, a, b);
       break;
     }
     case OP_JMP: {
-      int64_t dest = vm_read(vm);
+      uint64_t dest = vm_read(vm);
       if (!vm_jmp(vm, dest)) {
         fprintln(stderr, "invalid jump dest");
         exit(1);
@@ -196,7 +196,7 @@ void vm_next(VM *vm) {
       break;
     }
     case OP_JE: {
-      int64_t dest = vm_read(vm);
+      uint64_t dest = vm_read(vm);
       if (!vm_je(vm, dest)) {
         fprintln(stderr, "invalid jump dest");
         exit(1);
@@ -230,9 +230,9 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  int64_t value;
+  uint64_t value;
 
-  while (fread(&value, sizeof(int64_t), 1, file) == 1) {
+  while (fread(&value, sizeof(uint64_t), 1, file) == 1) {
     da_push(&vm.program, value);
   }
 

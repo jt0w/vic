@@ -63,7 +63,7 @@ typedef enum {
 typedef enum { FLAG_CF, FLAG_ZF } Flag;
 
 typedef struct {
-  int64_t *items;
+  uint64_t *items;
   size_t count;
   size_t cap;
 } Program;

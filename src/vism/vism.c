@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   }
   FILE *bfile = fopen("data.bin", "wb");
   assert(bfile != NULL);
-  fwrite(program.items, sizeof(int64_t), program.count, bfile);
+  fwrite(program.items, sizeof(uint64_t), program.count, bfile);
   fclose(bfile);
   return 0;
 }
