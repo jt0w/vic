@@ -27,7 +27,7 @@ typedef enum {
   OP_JL,
 } OpCode;
 
-#define REG_COUNT 26
+#define REG_COUNT 27
 typedef enum {
   REG_A,
   REG_B,
@@ -54,14 +54,16 @@ typedef enum {
   REG_W,
   REG_X,
   REG_Y,
-  REG_Z
+  REG_Z,
+
+  REG_SP,
 } Register;
 
 #define FLAG_COUNT 2
 typedef enum { FLAG_CF, FLAG_ZF } Flag;
 
 typedef struct {
-  uint64_t *items;
+  int64_t *items;
   size_t count;
   size_t cap;
 } Program;
