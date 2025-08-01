@@ -8,13 +8,13 @@
       "locked": {
         "lastModified": 1751208182,
         "narHash": "sha256-AZmXsJ4vqYw0fSCyLxKsjLGWKV6EN9lAVkgNeBfvTvM=",
-        "owner": "secretval",
+        "owner": "jt0w",
         "repo": "chimera",
         "rev": "102e728fa51a018269318f55bbb370fb4b1942f2",
         "type": "github"
       },
       "original": {
-        "owner": "secretval",
+        "owner": "jt0w",
         "repo": "chimera",
         "type": "github"
       }
