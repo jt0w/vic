@@ -9,6 +9,8 @@
 
 #include <vm.h>
 
+#define VERSION "0.0.1-alpha"
+
 int main(int argc, char *argv[]) {
   shift(argv, argc);
 
@@ -22,11 +24,8 @@ int main(int argc, char *argv[]) {
   read_file(file, &sb);
   Lexer lexer = {.input = sb.items, .cpos = (Position){1, 1}, .file = file};
   Tokens tokens = {0};
-  while (lexer.pos < sb.count) {
-    Token t = next_token(&lexer);
-    println("%s", print_token(t, true));
-    da_push(&tokens, t);
-  }
+  while (lexer.pos < sb.count)
+    da_push(&tokens, next_token(&lexer));
   Parser parser = {
       .tokens = tokens,
       .file = file,
@@ -47,5 +46,7 @@ int main(int argc, char *argv[]) {
   assert(bfile != NULL);
   fwrite(program.items, sizeof(uint64_t), program.count, bfile);
   fclose(bfile);
+  println("Vism %s", );
+  println("%zu bytes", program.count * sizeof(uint64_t));
   return 0;
 }

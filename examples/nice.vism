@@ -1,0 +1,4 @@
+load A 1
+load B 34
+add B 35
+syscall
