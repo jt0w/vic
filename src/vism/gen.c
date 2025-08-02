@@ -41,7 +41,7 @@ Expr gen_consume(Gen *gen) {
       push((x));                                                               \
       ARG_REG();                                                               \
       push(REG_Z);                                                             \
-      gen_consume(gen);                                                        \
+      shift(gen->current.args.items, gen->current.args.count);                 \
       push(OP_POP_REG);                                                        \
       push(REG_Z);                                                             \
     } else {                                                                   \
@@ -70,7 +70,7 @@ Program gen_parse_expr(Gen *gen) {
       break;
     }
     default:
-      todo("ek_push: arg");
+      abort();
     }
     break;
   }
