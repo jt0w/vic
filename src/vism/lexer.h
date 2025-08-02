@@ -19,6 +19,8 @@ typedef enum {
   TK_ERR,
   TK_WHITESPACE,
 
+  TK_NOP,
+
   TK_INT_LIT,
   TK_LIT,
 
@@ -41,6 +43,8 @@ typedef enum {
   TK_JG,
   TK_JLE,
   TK_JL,
+
+  TK_SYSCALL,
 } TokenKind;
 
 typedef struct {

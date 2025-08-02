@@ -25,6 +25,8 @@ typedef enum {
   OP_JG,
   OP_JLE,
   OP_JL,
+
+  OP_SYSCALL,
 } OpCode;
 
 #define REG_COUNT 27

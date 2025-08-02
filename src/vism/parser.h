@@ -22,6 +22,10 @@ typedef enum {
 
   EK_INT,
   EK_LIT,
+
+  EK_NOP,
+
+  EK_SYSCALL,
 } ExprKind;
 
 typedef struct {

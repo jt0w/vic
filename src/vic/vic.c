@@ -2,9 +2,9 @@
 #define CHIMERA_STRIP_PREFIX
 #include <chimera.h>
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <inttypes.h>
 #include <vm.h>
 
 typedef struct {
@@ -33,7 +33,7 @@ uint64_t vm_pop(VM *vm, Register reg) {
     fprintf(stderr, "error: stack underflow\n");
     exit(1);
   }
-  uint64_t res = vm->stack.items[vm->regs[REG_SP-1]];
+  uint64_t res = vm->stack.items[vm->regs[REG_SP - 1]];
   vm->regs[reg] = res;
   vm->stack.items[vm->regs[REG_SP]] = 0;
   vm->regs[REG_SP]--;
@@ -41,9 +41,7 @@ uint64_t vm_pop(VM *vm, Register reg) {
   return res;
 }
 
-inline void vm_load(VM *vm, Register reg, uint64_t val) {
-  vm->regs[reg] = val;
-}
+inline void vm_load(VM *vm, Register reg, uint64_t val) { vm->regs[reg] = val; }
 
 inline void vm_load_reg(VM *vm, Register dest, Register src) {
   vm->regs[dest] = vm->regs[src];
@@ -114,104 +112,117 @@ inline static uint64_t vm_read(VM *vm) {
 void vm_next(VM *vm) {
   uint64_t inst = vm_read(vm);
   switch (inst) {
-    case OP_NOP:
-      break;
-    case OP_PUSH: {
-      uint64_t val = vm_read(vm);
-      if (!vm_push(vm, val)) {
-        fprintln(stderr, "stack overflow");
-        exit(1);
-      }
-      break;
+  case OP_NOP:
+    break;
+  case OP_PUSH: {
+    uint64_t val = vm_read(vm);
+    if (!vm_push(vm, val)) {
+      fprintln(stderr, "stack overflow");
+      exit(1);
     }
-    case OP_POP_REG: {
-      uint64_t reg = vm_read(vm);
-      assert(reg >= REG_A && reg <= REG_Z);
-      vm_pop(vm, reg);
-      break;
+    break;
+  }
+  case OP_POP_REG: {
+    uint64_t reg = vm_read(vm);
+    assert(reg >= REG_A && reg <= REG_Z);
+    vm_pop(vm, reg);
+    break;
+  }
+  case OP_ADD: {
+    Register dest = vm_read(vm);
+    Register src = vm_read(vm);
+    assert(dest >= REG_A && dest <= REG_Z);
+    assert(src >= REG_A && src <= REG_Z);
+    vm->regs[dest] = vm->regs[dest] + vm->regs[src];
+    break;
+  }
+  case OP_SUB: {
+    Register dest = vm_read(vm);
+    Register src = vm_read(vm);
+    assert(dest >= REG_A && dest <= REG_Z);
+    assert(src >= REG_A && src <= REG_Z);
+    vm->regs[dest] = vm->regs[dest] - vm->regs[src];
+    break;
+  }
+  case OP_MULT: {
+    Register dest = vm_read(vm);
+    Register src = vm_read(vm);
+    assert(dest >= REG_A && dest <= REG_Z);
+    assert(src >= REG_A && src <= REG_Z);
+    vm->regs[dest] = vm->regs[dest] * vm->regs[src];
+    break;
+  }
+  case OP_DIV: {
+    Register dest = vm_read(vm);
+    Register src = vm_read(vm);
+    assert(dest >= REG_A && dest <= REG_Z);
+    assert(src >= REG_A && src <= REG_Z);
+    vm->regs[dest] = vm->regs[dest] / vm->regs[src];
+    break;
+  }
+  case OP_LOAD: {
+    uint64_t reg = vm_read(vm);
+    uint64_t val = vm_read(vm);
+    vm_load(vm, reg, val);
+    break;
+  }
+  case OP_LOAD_REG: {
+    uint64_t dest = vm_read(vm);
+    uint64_t src = vm_read(vm);
+    vm_load_reg(vm, dest, src);
+    break;
+  }
+  case OP_PUSH_REG: {
+    uint64_t reg = vm_read(vm);
+    vm_push_reg(vm, reg);
+    break;
+  }
+  case OP_CMP: {
+    uint64_t a = vm_read(vm);
+    uint64_t b = vm_read(vm);
+    assert(a >= REG_A && a <= REG_Z);
+    assert(b >= REG_A && b <= REG_Z);
+    vm_cmp_reg(vm, a, b);
+    break;
+  }
+  case OP_JMP: {
+    uint64_t dest = vm_read(vm);
+    if (!vm_jmp(vm, dest)) {
+      fprintln(stderr, "invalid jump dest");
+      exit(1);
     }
-    case OP_ADD: {
-      Register dest = vm_read(vm);
-      Register src = vm_read(vm);
-      assert(dest >= REG_A && dest <= REG_Z);
-      assert(src >= REG_A && src <= REG_Z);
-      vm->regs[dest] = vm->regs[dest] + vm->regs[src];
-      break;
+    break;
+  }
+  case OP_JE: {
+    uint64_t dest = vm_read(vm);
+    if (!vm_je(vm, dest)) {
+      fprintln(stderr, "invalid jump dest");
+      exit(1);
     }
-    case OP_SUB: {
-      Register dest = vm_read(vm);
-      Register src = vm_read(vm);
-      assert(dest >= REG_A && dest <= REG_Z);
-      assert(src >= REG_A && src <= REG_Z);
-      vm->regs[dest] = vm->regs[dest] - vm->regs[src];
-      break;
-    }
-    case OP_MULT: {
-      Register dest = vm_read(vm);
-      Register src = vm_read(vm);
-      assert(dest >= REG_A && dest <= REG_Z);
-      assert(src >= REG_A && src <= REG_Z);
-      vm->regs[dest] = vm->regs[dest] * vm->regs[src];
-      break;
-    }
-    case OP_DIV: {
-      Register dest = vm_read(vm);
-      Register src = vm_read(vm);
-      assert(dest >= REG_A && dest <= REG_Z);
-      assert(src >= REG_A && src <= REG_Z);
-      vm->regs[dest] = vm->regs[dest] / vm->regs[src];
-      break;
-    }
-    case OP_LOAD: {
-      uint64_t reg = vm_read(vm);
-      uint64_t val = vm_read(vm);
-      vm_load(vm, reg, val);
-      break;
-    }
-    case OP_LOAD_REG: {
-      uint64_t dest = vm_read(vm);
-      uint64_t src = vm_read(vm);
-      vm_load_reg(vm, dest, src);
-      break;
-    }
-    case OP_PUSH_REG: {
-      uint64_t reg = vm_read(vm);
-      vm_push_reg(vm, reg);
-      break;
-    }
-    case OP_CMP: {
-      uint64_t a = vm_read(vm);
-      uint64_t b = vm_read(vm);
-      assert(a >= REG_A && a <= REG_Z);
-      assert(b >= REG_A && b <= REG_Z);
-      vm_cmp_reg(vm, a, b);
-      break;
-    }
-    case OP_JMP: {
-      uint64_t dest = vm_read(vm);
-      if (!vm_jmp(vm, dest)) {
-        fprintln(stderr, "invalid jump dest");
-        exit(1);
-      }
-      break;
-    }
-    case OP_JE: {
-      uint64_t dest = vm_read(vm);
-      if (!vm_je(vm, dest)) {
-        fprintln(stderr, "invalid jump dest");
-        exit(1);
-      }
+    break;
+  }
+  case OP_SYSCALL: {
+    uint64_t sys_code = vm->regs[REG_A];
+    switch (sys_code) {
+    case 1: {
+      uint64_t exit_code = vm->regs[REG_B];
+      exit(exit_code);
       break;
     }
     default:
-      todo(temp_sprintf("vm_next invalid opcode %u %zu", (unsigned int)inst,
-                        vm->pc));
+      abort();
+    }
+    break;
+  }
+  default:
+    todo(temp_sprintf("vm_next invalid opcode %u %zu", (unsigned int)inst,
+                      vm->pc));
   }
 }
 
 int main(int argc, char *argv[]) {
   VM vm = {};
-  // REALLY IMPORTANT
+
   vm.flags[FLAG_ZF] = -1;
   vm.flags[FLAG_CF] = -1;
 
