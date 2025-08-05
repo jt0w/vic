@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
   assert(bfile != NULL);
   fwrite(program.items, sizeof(uint64_t), program.count, bfile);
   fclose(bfile);
-  println("Vism %s", );
+  println("Vism %s", VERSION);
   println("%zu bytes", program.count * sizeof(uint64_t));
   return 0;
 }

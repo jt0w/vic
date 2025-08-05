@@ -1,3 +1,3 @@
 clang
-%c -std=c99
+%c -std=c23
 -I./src/common
