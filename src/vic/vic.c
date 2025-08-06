@@ -8,6 +8,12 @@
 #include <unistd.h>
 #include <vm.h>
 
+#define ERROR(x)                                                               \
+  {                                                                            \
+    fprintln(stderr, x);                                                       \
+    abort();                                                                   \
+  }
+
 typedef struct {
   size_t count;
   size_t cap;
@@ -31,8 +37,7 @@ bool vm_push(VM *vm, uint64_t val) {
 
 uint64_t vm_pop(VM *vm, Register reg) {
   if (vm->regs[REG_SP] == 0) {
-    fprintf(stderr, "error: stack underflow\n");
-    exit(1);
+    ERROR("vic: error: stack underflow");
   }
   uint64_t res = vm->stack.items[vm->regs[REG_SP - 1]];
   vm->regs[reg] = res;
@@ -118,8 +123,7 @@ void vm_next(VM *vm) {
   case OP_PUSH: {
     uint64_t val = vm_read(vm);
     if (!vm_push(vm, val)) {
-      fprintln(stderr, "stack overflow");
-      exit(1);
+      ERROR("stack overflow");
     }
     break;
   }
@@ -188,18 +192,14 @@ void vm_next(VM *vm) {
   }
   case OP_JMP: {
     uint64_t dest = vm_read(vm);
-    if (!vm_jmp(vm, dest)) {
-      fprintln(stderr, "invalid jump dest");
-      exit(1);
-    }
+    if (!vm_jmp(vm, dest))
+      ERROR("vic: error: invalid jump dest");
     break;
   }
   case OP_JE: {
     uint64_t dest = vm_read(vm);
-    if (!vm_je(vm, dest)) {
-      fprintln(stderr, "invalid jump dest");
-      exit(1);
-    }
+    if (!vm_je(vm, dest))
+      ERROR("vic: error: invalid jump dest");
     break;
   }
   case OP_SYSCALL: {
@@ -215,7 +215,7 @@ void vm_next(VM *vm) {
       uint64_t fd = vm->regs[REG_B];
       uint64_t c = vm->regs[REG_C];
       if (!write(fd, &c, 1)) {
-        abort();
+        ERROR("vic: error: write failed");
       }
       break;
     }
@@ -235,7 +235,7 @@ void vm_next(VM *vm) {
       break;
     }
     default:
-      abort();
+      ERROR("vic: error: unsupported syscall");
     }
     break;
   }
