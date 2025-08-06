@@ -4,7 +4,8 @@
 
 ## Operations
 > [!NOTE]
-> Not documented yet
+> Not documented yet.
+>
 > For now just look at [`src/common/vm.h`](../src/common/vm.h)
 
 ## Registers
