@@ -1,8 +1,8 @@
 # Docs
 
 ## Operations
->> TODO:
->> For now just look at [`src/common/vm.h`](../src/common/vm.h)
+> TODO:
+> For now just look at [`src/common/vm.h`](../src/common/vm.h)
 
 ## Registers
 There are a total of 26 registers: A - Z.
