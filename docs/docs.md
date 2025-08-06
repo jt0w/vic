@@ -1,15 +1,16 @@
 # Docs
+> [!WARNING]:
+This is just a draft 
 
 ## Operations
-> TODO:
+> [!TODO]: 
 > For now just look at [`src/common/vm.h`](../src/common/vm.h)
 
 ## Registers
-There are a total of 26 registers: A - Z.
+There are a total of 27 registers: A - Z and the Stack Pointer SP.
 In the future registers like the stack pointer will also be accessible.
 
 ## Syscalls
-> wip
 
 | Val of A | Name  | Implemented |
 |----------|-------|-------------|
