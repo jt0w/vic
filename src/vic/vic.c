@@ -5,6 +5,7 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <vm.h>
 
 typedef struct {
@@ -204,7 +205,31 @@ void vm_next(VM *vm) {
   case OP_SYSCALL: {
     uint64_t sys_code = vm->regs[REG_A];
     switch (sys_code) {
+    // sys read
+    case 0: {
+      todo("sys read");
+      break;
+    }
+    // sys write
     case 1: {
+      uint64_t fd = vm->regs[REG_B];
+      uint64_t c = vm->regs[REG_C];
+      if (!write(fd, &c, 1)) {
+        abort();
+      }
+      break;
+    }
+    // sys open
+    case 2: {
+      todo("sys open");
+      break;
+    }
+    // sys close
+    case 3: {
+      todo("sys close");
+      break;
+    }
+    case 4: {
       uint64_t exit_code = vm->regs[REG_B];
       exit(exit_code);
       break;

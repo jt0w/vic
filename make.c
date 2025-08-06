@@ -5,7 +5,7 @@
 
 #define build_dir "build/"
 #define src_dir "src/"
-#define c_std  "c23"
+#define c_std  "gnu23"
 
 typedef struct {
   char *name;
