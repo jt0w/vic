@@ -1,9 +1,9 @@
 # Docs
-> [!WARNING]:
-This is just a draft 
+> [!WARNING]
+> This is just a draft 
 
 ## Operations
-> [!TODO]: 
+> [!TODO]
 > For now just look at [`src/common/vm.h`](../src/common/vm.h)
 
 ## Registers
