@@ -207,6 +207,7 @@ void vm_next(VM *vm) {
     switch (sys_code) {
     // sys read
     case 0: {
+      // TODO: Need buffers for this
       todo("sys read");
       break;
     }
