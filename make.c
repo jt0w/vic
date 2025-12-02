@@ -5,7 +5,7 @@
 
 #define build_dir "build/"
 #define src_dir "src/"
-#define c_std  "gnu23"
+#define c_std  "c23"
 
 typedef struct {
   char *name;
@@ -32,7 +32,7 @@ const Tool TOOLS[] = {
 int build_tool(Tool tool) {
   Cmd cmd = {0};
   cmd_push(&cmd, "gcc", "-std="c_std, "-I./src/common");
-  cmd_push(&cmd, "-Wall", /*"-pedantic"*/ "-ggdb");
+  cmd_push(&cmd, "-Wall", "-pedantic", "-ggdb");
   cmd_push(&cmd, "-o", tool.out);
   cmd_push(&cmd, tool.src);
   return cmd_exec(&cmd);
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
     StringBuilder sb = {0};
     for (size_t i = 0; i < sizeof(TOOLS) / sizeof(TOOLS[0]); ++i) {
       log(CHIMERA_INFO, "Compiling %s", TOOLS[i].name);
-      if (build_tool(TOOLS[i]) == 0)
+      if (build_tool(TOOLS[i]) != 0)
         log(CHIMERA_INFO, "Compiled %s", TOOLS[i].name);
       else
         log(CHIMERA_ERROR, "Error while compiling %s", TOOLS[i].name);

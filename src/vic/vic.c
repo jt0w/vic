@@ -230,6 +230,7 @@ void vm_next(VM *vm) {
       todo("sys close");
       break;
     }
+    // sys exit
     case 4: {
       uint64_t exit_code = vm->regs[REG_B];
       exit(exit_code);

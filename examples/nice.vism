@@ -1,4 +1,4 @@
-load A 1
+load A 4
 load B 34
-add B 35
+add  B 35
 syscall
