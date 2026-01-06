@@ -7,25 +7,18 @@
 typedef enum {
   EK_PUSH,
   EK_POP,
-  EK_LOAD,
+  EK_DUP,
   EK_ADD,
   EK_SUB,
   EK_MULT,
   EK_DIV,
-  EK_CMP,
+  EK_EQ,
   EK_JMP,
-  EK_JE,
-  EK_JGE,
-  EK_JG,
-  EK_JLE,
-  EK_JL,
-
+  EK_JZ,
+  EK_JNZ,
   EK_INT,
   EK_LIT,
-
   EK_NOP,
-
-  EK_SYSCALL,
 } ExprKind;
 
 typedef struct {
@@ -49,5 +42,4 @@ typedef struct {
 bool par_raw_consume(Parser *parser);
 Token par_consume(Parser *parser);
 Expr parse_expr(Parser *parser);
-
 #endif /* end of include guard: PARSER_H */

@@ -8,251 +8,121 @@
 #include <unistd.h>
 #include <vm.h>
 
-#define ERROR(x)                                                               \
-  {                                                                            \
-    fprintln(stderr, x);                                                       \
-    abort();                                                                   \
-  }
-
 typedef struct {
   size_t count;
   size_t cap;
-  uint64_t *items;
+  Word *items;
 } Stack;
 
 typedef struct {
   Program program;
   Stack stack;
-  uint64_t regs[REG_COUNT];
-  uint64_t flags[FLAG_COUNT];
-
   size_t pc;
 } VM;
 
-bool vm_push(VM *vm, uint64_t val) {
-  vm->regs[REG_SP]++;
-  da_push(&vm->stack, val);
-  return true;
-}
+typedef enum {
+  RESULT_OK,
+  RESULT_ERROR_STACK_OVERFLOW,
+  RESULT_ERROR_STACK_UNDERFLOW,
+  RESULT_ERROR_ILLEGAL_INST,
+  RESULT_ERROR_ILLEGAL_INST_ACCESS,
+} Result;
 
-uint64_t vm_pop(VM *vm, Register reg) {
-  if (vm->regs[REG_SP] == 0) {
-    ERROR("vic: error: stack underflow");
+const char *result_to_str(Result e) {
+  switch (e) {
+  case RESULT_OK:
+    return "OK";
+  case RESULT_ERROR_STACK_OVERFLOW:
+    return "ERROR_STACK_OVERFLOW";
+  case RESULT_ERROR_STACK_UNDERFLOW:
+    return "ERROR_STACK_UNDERFLOW";
+  case RESULT_ERROR_ILLEGAL_INST:
+    return "ERROR_ILLEGAL_INST";
+  case RESULT_ERROR_ILLEGAL_INST_ACCESS:
+    return "ERROR_ILLEGAL_INST_ACCESS";
+  default:
+    assert(0 && "UNREACHABLE: err_to_str");
   }
-  uint64_t res = vm->stack.items[vm->regs[REG_SP - 1]];
-  vm->regs[reg] = res;
-  vm->stack.items[vm->regs[REG_SP]] = 0;
-  vm->regs[REG_SP]--;
-  vm->stack.count--;
-  return res;
 }
 
-inline void vm_load(VM *vm, Register reg, uint64_t val) { vm->regs[reg] = val; }
-
-inline void vm_load_reg(VM *vm, Register dest, Register src) {
-  vm->regs[dest] = vm->regs[src];
-}
-bool vm_push_reg(VM *vm, Register reg) { return vm_push(vm, vm->regs[reg]); }
-
-static inline void compare(VM *vm, uint64_t a, int64_t b) {
-  uint64_t res = a - b;
-  if (res == 0)
-    vm->flags[FLAG_ZF] = 0;
-  if (res < 0)
-    vm->flags[FLAG_CF] = 0;
-  if (res > 0)
-    vm->flags[FLAG_CF] = 1;
-}
-
-static inline void vm_cmp_reg(VM *vm, Register ra, Register rb) {
-  uint64_t a = vm->regs[ra];
-  uint64_t b = vm->regs[rb];
-  compare(vm, a, b);
-}
-
-static inline void vm_cmp_stack(VM *vm) {
-  uint64_t a = vm->stack.items[vm->regs[REG_SP]];
-  uint64_t b = vm->stack.items[vm->regs[REG_SP] - 1];
-  compare(vm, a, b);
-}
-
-bool vm_jmp(VM *vm, uint64_t dest) {
-  if (dest > vm->program.count || dest < 0)
-    return false;
-  vm->pc = dest;
-  return true;
-}
-
-bool vm_je(VM *vm, uint64_t dest) {
-  if (vm->flags[FLAG_ZF] == 0)
-    return vm_jmp(vm, dest);
-  return true;
-}
-
-bool vm_jg(VM *vm, uint64_t dest) {
-  if (vm->flags[FLAG_CF])
-    return vm_jmp(vm, dest);
-  return false;
-}
-
-bool vm_jge(VM *vm, uint64_t dest) {
-  return vm_je(vm, dest) || vm_jg(vm, dest);
-}
-
-bool vm_jl(VM *vm, uint64_t dest) {
-  if (!vm->flags[FLAG_CF])
-    return vm_jmp(vm, dest);
-  return false;
-}
-
-bool vm_jle(VM *vm, uint64_t dest) {
-  return vm_je(vm, dest) || vm_jl(vm, dest);
-}
-
-inline static uint64_t vm_read(VM *vm) {
-  uint64_t inst = vm->program.items[vm->pc];
-  vm->pc++;
-  return inst;
-}
-
-void vm_next(VM *vm) {
-  uint64_t inst = vm_read(vm);
-  switch (inst) {
+Result vm_next(VM *vm) {
+  if (vm->pc >= vm->program.count) {
+    return RESULT_ERROR_ILLEGAL_INST_ACCESS;
+  }
+  Inst inst = vm->program.items[vm->pc++];
+  switch (inst.opcode) {
   case OP_NOP:
     break;
-  case OP_PUSH: {
-    uint64_t val = vm_read(vm);
-    if (!vm_push(vm, val)) {
-      ERROR("stack overflow");
-    }
+  case OP_PUSH:
+    da_push(&vm->stack, inst.operand);
     break;
-  }
-  case OP_POP_REG: {
-    uint64_t reg = vm_read(vm);
-    assert(reg >= REG_A && reg <= REG_Z);
-    vm_pop(vm, reg);
+  case OP_POP:
+    if (vm->stack.count == 0)
+      return RESULT_ERROR_STACK_UNDERFLOW;
+    vm->stack.count--;
     break;
-  }
-  case OP_ADD: {
-    Register dest = vm_read(vm);
-    Register src = vm_read(vm);
-    assert(dest >= REG_A && dest <= REG_Z);
-    assert(src >= REG_A && src <= REG_Z);
-    vm->regs[dest] = vm->regs[dest] + vm->regs[src];
+  case OP_DUP:
+    if (vm->stack.count < 1)
+      return RESULT_ERROR_STACK_UNDERFLOW;
+    da_push(&vm->stack, vm->stack.items[vm->stack.count - 1 - inst.operand]);
     break;
-  }
-  case OP_SUB: {
-    Register dest = vm_read(vm);
-    Register src = vm_read(vm);
-    assert(dest >= REG_A && dest <= REG_Z);
-    assert(src >= REG_A && src <= REG_Z);
-    vm->regs[dest] = vm->regs[dest] - vm->regs[src];
+  case OP_ADD:
+    if (vm->stack.count < 2)
+      return RESULT_ERROR_STACK_UNDERFLOW;
+    vm->stack.items[vm->stack.count - 2] +=
+        vm->stack.items[vm->stack.count - 1];
+    vm->stack.count--;
     break;
-  }
-  case OP_MULT: {
-    Register dest = vm_read(vm);
-    Register src = vm_read(vm);
-    assert(dest >= REG_A && dest <= REG_Z);
-    assert(src >= REG_A && src <= REG_Z);
-    vm->regs[dest] = vm->regs[dest] * vm->regs[src];
+  case OP_SUB:
+    if (vm->stack.count < 2)
+      return RESULT_ERROR_STACK_UNDERFLOW;
+    vm->stack.items[vm->stack.count - 2] -=
+        vm->stack.items[vm->stack.count - 1];
+    vm->stack.count--;
     break;
-  }
-  case OP_DIV: {
-    Register dest = vm_read(vm);
-    Register src = vm_read(vm);
-    assert(dest >= REG_A && dest <= REG_Z);
-    assert(src >= REG_A && src <= REG_Z);
-    vm->regs[dest] = vm->regs[dest] / vm->regs[src];
+  case OP_MULT:
+    if (vm->stack.count < 2)
+      return RESULT_ERROR_STACK_UNDERFLOW;
+    vm->stack.items[vm->stack.count - 2] *=
+        vm->stack.items[vm->stack.count - 1];
+    vm->stack.count--;
     break;
-  }
-  case OP_LOAD: {
-    uint64_t reg = vm_read(vm);
-    uint64_t val = vm_read(vm);
-    vm_load(vm, reg, val);
+  case OP_DIV:
+    if (vm->stack.count < 2)
+      return RESULT_ERROR_STACK_UNDERFLOW;
+    vm->stack.items[vm->stack.count - 2] /=
+        vm->stack.items[vm->stack.count - 1];
+    vm->stack.count--;
     break;
-  }
-  case OP_LOAD_REG: {
-    uint64_t dest = vm_read(vm);
-    uint64_t src = vm_read(vm);
-    vm_load_reg(vm, dest, src);
+  case OP_EQ:
+    if (vm->stack.count < 2)
+      return RESULT_ERROR_STACK_UNDERFLOW;
+    vm->stack.items[vm->stack.count - 2] =
+        vm->stack.items[vm->stack.count - 1] ==
+        vm->stack.items[vm->stack.count - 2];
+    vm->stack.count--;
     break;
-  }
-  case OP_PUSH_REG: {
-    uint64_t reg = vm_read(vm);
-    vm_push_reg(vm, reg);
+  case OP_JMP:
+    vm->pc = inst.operand;
     break;
-  }
-  case OP_CMP: {
-    uint64_t a = vm_read(vm);
-    uint64_t b = vm_read(vm);
-    assert(a >= REG_A && a <= REG_Z);
-    assert(b >= REG_A && b <= REG_Z);
-    vm_cmp_reg(vm, a, b);
+  case OP_JNZ:
+    if (vm->stack.items[vm->stack.count - 1] != 0)
+      vm->pc = inst.operand;
     break;
-  }
-  case OP_JMP: {
-    uint64_t dest = vm_read(vm);
-    if (!vm_jmp(vm, dest))
-      ERROR("vic: error: invalid jump dest");
+  case OP_JZ:
+    if (vm->stack.items[vm->stack.count - 1] == 0)
+      vm->pc = inst.operand;
     break;
-  }
-  case OP_JE: {
-    uint64_t dest = vm_read(vm);
-    if (!vm_je(vm, dest))
-      ERROR("vic: error: invalid jump dest");
-    break;
-  }
-  case OP_SYSCALL: {
-    uint64_t sys_code = vm->regs[REG_A];
-    switch (sys_code) {
-    // sys read
-    case 0: {
-      // TODO: Need buffers for this
-      todo("sys read");
-      break;
-    }
-    // sys write
-    case 1: {
-      uint64_t fd = vm->regs[REG_B];
-      uint64_t c = vm->regs[REG_C];
-      if (!write(fd, &c, 1)) {
-        ERROR("vic: error: write failed");
-      }
-      break;
-    }
-    // sys open
-    case 2: {
-      todo("sys open");
-      break;
-    }
-    // sys close
-    case 3: {
-      todo("sys close");
-      break;
-    }
-    // sys exit
-    case 4: {
-      uint64_t exit_code = vm->regs[REG_B];
-      exit(exit_code);
-      break;
-    }
-    default:
-      ERROR("vic: error: unsupported syscall");
-    }
-    break;
-  }
   default:
-    todo(temp_sprintf("vm_next invalid opcode %u %zu", (unsigned int)inst,
-                      vm->pc));
+    return RESULT_ERROR_ILLEGAL_INST;
   }
+  return RESULT_OK;
 }
 
 int main(int argc, char *argv[]) {
-  VM vm = {};
-
-  vm.flags[FLAG_ZF] = -1;
-  vm.flags[FLAG_CF] = -1;
-
+  (void)argc;
+  (void)argv;
+  VM vm = {0};
   shift(argv, argc);
 
   if (argc != 1) {
@@ -268,14 +138,23 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  uint64_t value;
-
-  while (fread(&value, sizeof(uint64_t), 1, file) == 1) {
-    da_push(&vm.program, value);
+  Inst inst;
+  while (fread(&inst, sizeof(Inst), 1, file) == 1) {
+    da_push(&vm.program, inst);
   }
 
-  while (vm.pc <= vm.program.count)
-    vm_next(&vm);
+  Result res;
+  while (vm.pc < vm.program.count) {
+    res = vm_next(&vm);
+    if (res != RESULT_OK) {
+      log(ERROR, "%s", result_to_str(res));
+      return 1;
+    }
+  }
 
+  println("Stack:");
+  for (size_t i = 0; i < vm.stack.count; ++i) {
+    println("  %ld", vm.stack.items[i]);
+  }
   return 0;
 }

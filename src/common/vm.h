@@ -3,71 +3,47 @@
 #include <stdint.h>
 #include <stdio.h>
 
+typedef uint64_t Word;
+
 typedef enum {
   OP_NOP = 0x0,
   OP_PUSH,
-  OP_PUSH_REG,
-  OP_POP_REG,
-
-  OP_LOAD,
-  OP_LOAD_REG,
+  OP_POP,
+  OP_DUP,
 
   OP_ADD,
   OP_SUB,
   OP_MULT,
   OP_DIV,
 
-  OP_CMP,
+  OP_EQ,
 
   OP_JMP,
-  OP_JE,
-  OP_JGE,
-  OP_JG,
-  OP_JLE,
-  OP_JL,
-
-  OP_SYSCALL,
+  OP_JNZ,
+  OP_JZ,
 } OpCode;
 
-#define REG_COUNT 27
-typedef enum {
-  REG_A,
-  REG_B,
-  REG_C,
-  REG_D,
-  REG_E,
-  REG_F,
-  REG_G,
-  REG_H,
-  REG_I,
-  REG_J,
-  REG_K,
-  REG_L,
-  REG_M,
-  REG_N,
-  REG_O,
-  REG_P,
-  REG_Q,
-  REG_R,
-  REG_S,
-  REG_T,
-  REG_U,
-  REG_V,
-  REG_W,
-  REG_X,
-  REG_Y,
-  REG_Z,
+typedef struct {
+  OpCode opcode;
+  uint64_t operand;
+} Inst;
 
-  REG_SP,
-} Register;
-
-#define FLAG_COUNT 2
-typedef enum { FLAG_CF, FLAG_ZF } Flag;
+#define INST_NOP ((Inst){.opcode = OP_NOP})
+#define INST_PUSH(x) ((Inst){.opcode = OP_PUSH, .operand = (x)})
+#define INST_POP ((Inst){.opcode = OP_POP})
+#define INST_DUP(x) ((Inst){.opcode = OP_DUP, .operand = (x)})
+#define INST_ADD ((Inst){.opcode = OP_ADD})
+#define INST_SUB ((Inst){.opcode = OP_SUB})
+#define INST_MULT ((Inst){.opcode = OP_MULT})
+#define INST_DIV ((Inst){.opcode = OP_DIV})
+#define INST_EQ ((Inst){.opcode = OP_EQ})
+#define INST_JMP(x) ((Inst){.opcode = OP_JMP, .operand = (x)})
+#define INST_JNZ(x) ((Inst){.opcode = OP_JNZ, .operand = (x)})
+#define INST_JZ(x) ((Inst){.opcode = OP_JZ, .operand = (x)})
 
 typedef struct {
-  uint64_t *items;
+  Inst *items;
   size_t count;
   size_t cap;
 } Program;
-
 #endif // _VM_H

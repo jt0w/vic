@@ -9,26 +9,30 @@
 
 #include <vm.h>
 
-#define VERSION "0.0.1-alpha"
+#define VERSION "0.0.1"
 
 int main(int argc, char *argv[]) {
   shift(argv, argc);
 
-  if (argc != 1) {
-    fprintln(stderr, "Usage: vism <file>");
-    fprintln(stderr, "ERROR: Did not provide any args");
+
+  Flag output_file = parse_str_flag("-output", "-o", "out.bin");
+  Flag input_file = parse_str_flag("-input", "-i", NULL);
+
+  if (!input_file.as.str) {
+    fprintln(stderr, "Usage: vism -o <output> -i <file>");
+    log(ERROR, "Did not provide input file");
     return 0;
   }
-  char *file = shift(argv, argc);
+
   StringBuilder sb = {0};
-  read_file(file, &sb);
-  Lexer lexer = {.input = sb.items, .cpos = (Position){1, 1}, .file = file};
+  read_file((char*)input_file.as.str, &sb);
+  Lexer lexer = {.input = sb.items, .cpos = (Position){1, 1}, .file = input_file.as.str};
   Tokens tokens = {0};
   while (lexer.pos < sb.count)
     da_push(&tokens, next_token(&lexer));
   Parser parser = {
       .tokens = tokens,
-      .file = file,
+      .file = input_file.as.str,
   };
   Exprs exprs = {0};
   while (parser.pos <= parser.tokens.count) {
@@ -42,11 +46,11 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < temp.count; ++i)
       da_push(&program, temp.items[i]);
   }
-  FILE *bfile = fopen("data.bin", "wb");
+  FILE *bfile = fopen(output_file.as.str, "wb");
   assert(bfile != NULL);
-  fwrite(program.items, sizeof(uint64_t), program.count, bfile);
+  fwrite(program.items, sizeof(Inst), program.count, bfile);
   fclose(bfile);
   println("Vism %s", VERSION);
-  println("%zu bytes", program.count * sizeof(uint64_t));
+  println("%zu bytes", program.count * sizeof(Inst));
   return 0;
 }

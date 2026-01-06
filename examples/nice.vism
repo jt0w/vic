@@ -1,4 +1,3 @@
-load A 4
-load B 34
-add  B 35
-syscall
+push 34
+push 35
+add

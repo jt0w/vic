@@ -7,27 +7,18 @@ TK_Map TK_MAP[] = {
 
     {TK_PUSH, "TK_PUSH"},       {TK_POP, "TK_POP"},
 
-    {TK_LOAD, "TK_LOAD"},
-
     {TK_ADD, "TK_ADD"},         {TK_SUB, "TK_SUB"},
     {TK_MULT, "TK_MULT"},       {TK_DIV, "TK_DIV"},
 
-    {TK_CMP, "TK_CMP"},
-
-    {TK_JMP, "TK_JMP"},         {TK_JE, "TK_JE"},
-    {TK_JGE, "TK_JGE"},         {TK_JG, "TK_JG"},
-    {TK_JLE, "TK_JLE"},         {TK_JL, "TK_JL"},
-    {TK_SYSCALL, "TK_SYSCALL"}, {TK_NOP, "TK_NOP"},
+    {TK_JMP, "TK_JMP"},         {TK_JZ, "TK_JZ"},
+    {TK_JNZ, "TK_JNZ"},         {TK_NOP, "TK_NOP"},
+    {TK_DUP, "TK_DUP"},
 };
 
-TK_Map KeyWordMap[] = {
-    {TK_PUSH, "push"}, {TK_POP, "pop"}, {TK_LOAD, "load"},
-    {TK_ADD, "add"},   {TK_SUB, "sub"}, {TK_MULT, "mult"},
-    {TK_DIV, "div"},   {TK_CMP, "cmp"}, {TK_JMP, "jmp"},
-    {TK_JE, "je"},     {TK_JGE, "jge"}, {TK_JG, "jg"},
-    {TK_JLE, "jle"},   {TK_JL, "jl"},   {TK_SYSCALL, "syscall"},
-    {TK_NOP, "nop"},
-};
+TK_Map KeyWordMap[] = {{TK_PUSH, "push"}, {TK_POP, "pop"},   {TK_ADD, "add"},
+                       {TK_SUB, "sub"},   {TK_MULT, "mult"}, {TK_DIV, "div"},
+                       {TK_EQ, "eq"},     {TK_JMP, "jmp"},   {TK_NOP, "nop"},
+                       {TK_JNZ, "jnz"},   {TK_JZ, "jz"}, {TK_DUP, "dup"}};
 
 char *print_token(Token t, bool all_info) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {
@@ -49,14 +40,15 @@ char lex_consume(Lexer *lexer) {
   return lexer->current;
 }
 
-#define return(k)                                                              \
-  do {                                                                         \
-    t.kind = (k);                                                              \
-    da_push(&sb, '\0');                                                        \
-    t.span.literal = malloc(sb.count);                                         \
-    strcpy(t.span.literal, sb.items);                                          \
-    t.span.pos = lexer->cpos;                                                  \
-    return t;                                                                  \
+#define return_and_set_span(k)         \
+  do {                                 \
+    t.kind = (k);                      \
+    da_push(&sb, '\0');                \
+    t.span.literal = malloc(sb.count); \
+    strcpy(t.span.literal, sb.items);  \
+    t.span.pos = lexer->cpos;          \
+    da_free(sb);                       \
+    return t;                          \
   } while (0)
 
 Token next_token(Lexer *lexer) {
@@ -87,14 +79,15 @@ Token next_token(Lexer *lexer) {
     }
     da_push(&sb, lexer->current);
     lex_consume(lexer);
-    return (TK_WHITESPACE);
+    return_and_set_span (TK_WHITESPACE);
   }
   if (isdigit(lexer->current)) {
     while (isdigit(lexer->current)) {
+      t.as.num = t.as.num * 10 + lexer->current - '0';
       da_push(&sb, lexer->current);
       lex_consume(lexer);
     }
-    return (TK_INT_LIT);
+    return_and_set_span (TK_INT_LIT);
   }
   if (isalpha(lexer->current)) {
     while (isalpha(lexer->current)) {
@@ -104,12 +97,13 @@ Token next_token(Lexer *lexer) {
     da_push(&sb, '\0');
     for (size_t i = 0; i < sizeof(KeyWordMap) / sizeof(KeyWordMap[0]); ++i) {
       if (strcmp(KeyWordMap[i].id, sb.items) == 0) {
-        return (KeyWordMap[i].kind);
+        return_and_set_span (KeyWordMap[i].kind);
       }
     }
-    return (TK_LIT);
+    t.as.str = t.span.literal;
+    return_and_set_span (TK_LIT);
   }
   da_push(&sb, lexer->current);
   lex_consume(lexer);
-  return (TK_ERR);
+  return_and_set_span (TK_ERR);
 }

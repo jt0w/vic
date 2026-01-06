@@ -4,5 +4,5 @@ build: clean make_build
 make_build: make.c
 	gcc -o make make.c
 
-clean: 
+clean:
 	rm -rf build

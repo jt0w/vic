@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+#include <vm.h>
+
 typedef struct {
   size_t row;
   size_t col;
@@ -27,24 +29,18 @@ typedef enum {
   // KeyWords
   TK_PUSH,
   TK_POP,
-
-  TK_LOAD,
+  TK_DUP,
 
   TK_ADD,
   TK_SUB,
   TK_MULT,
   TK_DIV,
 
-  TK_CMP,
+  TK_EQ,
 
   TK_JMP,
-  TK_JE,
-  TK_JGE,
-  TK_JG,
-  TK_JLE,
-  TK_JL,
-
-  TK_SYSCALL,
+  TK_JZ,
+  TK_JNZ,
 } TokenKind;
 
 typedef struct {
@@ -59,6 +55,10 @@ extern TK_Map KeyWordMap[];
 typedef struct {
   Span span;
   TokenKind kind;
+  union {
+    const char *str;
+    Word num;
+  } as;
 } Token;
 
 char *print_token(Token t, bool with_value);

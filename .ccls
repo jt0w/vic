@@ -1,3 +1,6 @@
 clang
 %c -std=gnu23
 -I./src/common
+-Wall
+-Wextra
+-Wswitch-enums
