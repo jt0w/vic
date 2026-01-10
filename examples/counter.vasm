@@ -8,3 +8,4 @@ dup 0
 push 420
 eq
 jz loop
+pop

@@ -38,9 +38,9 @@ const Tool EXAMPLES[] = {
     .out = example_dir "nice.vb",
   },
   {
-    .name = "loop",
-    .src = example_dir "loop.vasm",
-    .out = example_dir "loop.vb",
+    .name = "counter",
+    .src = example_dir "counter.vasm",
+    .out = example_dir "counter.vb",
   },
 };
 
