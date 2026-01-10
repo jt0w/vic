@@ -7,6 +7,8 @@
 #define src_dir "src/"
 #define c_std  "c23"
 
+#define example_dir "examples/"
+
 typedef struct {
   char *name;
   char *out;
@@ -29,6 +31,14 @@ const Tool TOOLS[] = {
     },
 };
 
+const Tool EXAMPLES[] = {
+  {
+    .name = "nice",
+    .src = example_dir "nice.vasm",
+    .out = example_dir "nice.vb",
+  },
+};
+
 int build_tool(Tool tool) {
   Cmd cmd = {0};
   cmd_push(&cmd, "gcc", "-std="c_std, "-I./src/common");
@@ -38,41 +48,35 @@ int build_tool(Tool tool) {
   return cmd_exec(&cmd);
 }
 
+int build_example(Tool example) {
+  Cmd cmd = {0};
+  cmd_push(&cmd, "build/vasm");
+  cmd_push(&cmd, "-i",  example.src);
+  cmd_push(&cmd, "-o",  example.out);
+  return cmd_exec(&cmd);
+}
+
 int main(int argc, char **argv) {
   rebuild_file(argv, argc);
-  if (create_dir(build_dir) != 0)
-    return 1;
-
+  create_dir(build_dir);
   shift(argv, argc);
-  if (argc > 0) {
-    char *arg = shift(argv, argc);
-    bool valid_arg = false;
-    for (size_t i = 0; i < sizeof(TOOLS) / sizeof(TOOLS[0]); ++i) {
-      if (strcmp(arg, TOOLS[i].name) == 0) {
-        build_tool(TOOLS[i]);
-        Cmd cmd = {0};
-        cmd_push(&cmd, TOOLS[i].out);
-        while (argc > 0)
-          cmd_push(&cmd, shift(argv, argc));
-        valid_arg = true;
-        if (cmd_exec(&cmd) != 0)
-          return 1;
-        break;
-      }
-    }
+  Flag build_examples = parse_boolean_flag("-build_examples", "-be", false);
 
-    if (!valid_arg) {
-      log(CHIMERA_ERROR, "Not a valid tool %s", arg);
-      return 0;
-    }
-  } else {
-    StringBuilder sb = {0};
-    for (size_t i = 0; i < sizeof(TOOLS) / sizeof(TOOLS[0]); ++i) {
-      log(CHIMERA_INFO, "Compiling %s", TOOLS[i].name);
-      if (build_tool(TOOLS[i]) != 0)
-        log(CHIMERA_INFO, "Compiled %s", TOOLS[i].name);
+  for (size_t i = 0; i < sizeof(TOOLS) / sizeof(TOOLS[0]); ++i) {
+    log(CHIMERA_INFO, "Compiling %s", TOOLS[i].name);
+    if (build_tool(TOOLS[i]) != 0)
+      log(CHIMERA_INFO, "Compiled %s", TOOLS[i].name);
+    else
+      log(CHIMERA_ERROR, "Error while compiling %s", TOOLS[i].name);
+  }
+
+  if (build_examples.as.boolean) {
+    for (size_t i = 0; i < sizeof(EXAMPLES) / sizeof(EXAMPLES[0]); ++i) {
+      log(CHIMERA_INFO, "Compiling %s", EXAMPLES[i].name);
+      if (build_example(EXAMPLES[i]) != 0)
+        log(CHIMERA_INFO, "Compiled %s", EXAMPLES[i].name);
       else
-        log(CHIMERA_ERROR, "Error while compiling %s", TOOLS[i].name);
+        log(CHIMERA_ERROR, "Error while compiling %s", EXAMPLES[i].name);
     }
-  };
+  }
 }
