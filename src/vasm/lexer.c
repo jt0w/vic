@@ -1,19 +1,23 @@
 #include "lexer.h"
 
 TK_Map TK_MAP[] = {
-    {TK_ERR, "TK_ERR"},         {TK_WHITESPACE, "TK_WHITESPACE"},
-
-    {TK_INT_LIT, "TK_INT_LIT"}, {TK_LIT, "TK_LIT"},
-
-    {TK_PUSH, "TK_PUSH"},       {TK_POP, "TK_POP"},
-
-    {TK_ADD, "TK_ADD"},         {TK_SUB, "TK_SUB"},
-    {TK_MULT, "TK_MULT"},       {TK_DIV, "TK_DIV"},
-
-    {TK_JMP, "TK_JMP"},         {TK_JZ, "TK_JZ"},
-    {TK_JNZ, "TK_JNZ"},         {TK_NOP, "TK_NOP"},
-    {TK_DUP, "TK_DUP"},         {TK_COLON, "TK_COLON"},
+    {TK_ERR, "TK_ERR"},
+    {TK_INT_LIT, "TK_INT_LIT"},
+    {TK_LIT, "TK_LIT"},
+    {TK_PUSH, "TK_PUSH"},
+    {TK_POP, "TK_POP"},
+    {TK_ADD, "TK_ADD"},
+    {TK_SUB, "TK_SUB"},
+    {TK_MULT, "TK_MULT"},
+    {TK_DIV, "TK_DIV"},
+    {TK_JMP, "TK_JMP"},
+    {TK_JZ, "TK_JZ"},
+    {TK_JNZ, "TK_JNZ"},
+    {TK_NOP, "TK_NOP"},
+    {TK_DUP, "TK_DUP"},
+    {TK_COLON, "TK_COLON"},
     {TK_EQ, "TK_EQ"},
+    {TK_SEMICOLON, "TK_SEMICOLON"},
 };
 
 TK_Map KeyWordMap[] = {{TK_PUSH, "push"}, {TK_POP, "pop"},   {TK_ADD, "add"},
@@ -37,7 +41,12 @@ char *print_token(Token t, bool all_info) {
 }
 
 char lex_consume(Lexer *lexer) {
+  if (lexer->current == '\n') {
+    lexer->cpos.row++;
+    lexer->cpos.col = 0;
+  }
   lexer->current = lexer->input[lexer->pos++];
+  lexer->cpos.col++;
   return lexer->current;
 }
 
@@ -72,6 +81,7 @@ Token next_token(Lexer *lexer) {
     }
     return_and_set_span(TK_INT_LIT);
   }
+
   if (isalpha(lexer->current)) {
     while (isalpha(lexer->current)) {
       da_push(&sb, lexer->current);
@@ -91,7 +101,9 @@ Token next_token(Lexer *lexer) {
   case ':':
     lex_consume(lexer);
     return_and_set_span(TK_COLON);
-    break;
+  case ';':
+    lex_consume(lexer);
+    return_and_set_span(TK_SEMICOLON);
   }
   lex_consume(lexer);
   return_and_set_span(TK_ERR);

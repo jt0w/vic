@@ -1,20 +1,14 @@
 #include "parser.h"
 
-bool par_raw_consume(Parser *parser) {
-  parser->current = parser->tokens.items[parser->pos++];
-  return parser->current.kind == TK_WHITESPACE;
-}
-
 Token par_consume(Parser *parser) {
-  while (par_raw_consume(parser)) {
-  }
+  parser->current = parser->tokens.items[parser->pos++];
   return parser->current;
 }
 
 #define END -1
 
 Token par_expect(Parser *parser, ...) {
-Token t;
+  Token t;
   StringBuilder expected = {0};
   da_push(&expected, '[');
   va_list args;
@@ -167,9 +161,13 @@ Expr parse_expr(Parser *parser) {
     par_consume(parser);
     break;
   }
-  case TK_WHITESPACE: {
-    // Should be filtered out by consume
-    abort();
+  case TK_SEMICOLON: {
+    size_t row = parser->current.span.pos.row;
+    while (parser->current.span.pos.row == row &&
+           parser->pos < parser->tokens.count) {
+      par_consume(parser);
+    }
+    return parse_expr(parser);
   }
   case TK_COLON: {
     fprintf(stderr,

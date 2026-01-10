@@ -19,7 +19,6 @@ typedef struct {
 
 typedef enum {
   TK_ERR,
-  TK_WHITESPACE,
 
   TK_NOP,
 
@@ -43,6 +42,7 @@ typedef enum {
   TK_JNZ,
 
   TK_COLON,
+  TK_SEMICOLON,
 } TokenKind;
 
 typedef struct {
@@ -62,6 +62,7 @@ typedef struct {
     Word num;
   } as;
 } Token;
+
 
 char *print_token(Token t, bool with_value);
 

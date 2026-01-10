@@ -1,3 +1,4 @@
+;; simple program that counts from 1 to a number
 push 1
 push 1
 loop:
@@ -5,7 +6,8 @@ pop
 push 1
 add
 dup 0
-push 420
+; push 69
+push 420 ;; number to count up to
 eq
 jz loop
 pop
