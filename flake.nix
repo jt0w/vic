@@ -14,18 +14,26 @@
         self',
         pkgs,
         ...
-      }:  {
+      }: {
         devShells.default = pkgs.mkShell {
-            inputsFrom = [
-              self'.packages.vl
-              self'.packages.vasm
-            ];
-            buildInputs = with pkgs; [uncrustify];
+          inputsFrom = [
+            self'.packages.vl
+            self'.packages.vasm
+          ];
+          buildInputs = with pkgs; [uncrustify];
         };
 
-          packages = {
-            vl  =  pkgs.callPackage ./lib/buildPackage.nix {name = "vl";   version  = "0.0.1";  chimera = inputs.chimera;};
-            vasm = pkgs.callPackage ./lib/buildPackage.nix {name = "vasm"; version = "0.0.1";   chimera = inputs.chimera;};
+        packages = {
+          vl = pkgs.callPackage ./lib/buildPackage.nix {
+            name = "vl";
+            version = "0.0.1";
+            chimera = inputs.chimera;
+          };
+          vasm = pkgs.callPackage ./lib/buildPackage.nix {
+            name = "vasm";
+            version = "0.0.1";
+            chimera = inputs.chimera;
+          };
         };
       };
     };
