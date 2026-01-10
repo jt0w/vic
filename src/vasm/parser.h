@@ -18,6 +18,7 @@ typedef enum {
   EK_JNZ,
   EK_INT,
   EK_LIT,
+  EK_LABEL_DEF,
   EK_NOP,
 } ExprKind;
 

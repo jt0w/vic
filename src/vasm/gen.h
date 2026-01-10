@@ -2,13 +2,37 @@
 #define GEN_H
 #include "parser.h"
 
+typedef struct {
+  Word pos;
+  const char *name;
+} Label;
+
+typedef struct {
+  Label *items;
+  size_t count;
+  size_t cap;
+} Labels;
+
+typedef struct {
+  size_t expr_pos;
+  size_t program_pos;
+} UnresolvedJump;
+
+typedef struct {
+  UnresolvedJump *items;
+  size_t count;
+  size_t cap;
+} UnresolvedJumps;
 
 typedef struct {
   size_t pos;
   Exprs exprs;
   Expr current;
+
+  Labels labels;
+  UnresolvedJumps unresolved_jumps;
 } Gen;
 
 Expr gen_consume(Gen *gen);
-Program gen_parse_expr(Gen *gen);
+Program gen_generate(Gen *gen);
 #endif /* end of include guard: GEN_H */

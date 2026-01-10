@@ -37,6 +37,11 @@ const Tool EXAMPLES[] = {
     .src = example_dir "nice.vasm",
     .out = example_dir "nice.vb",
   },
+  {
+    .name = "loop",
+    .src = example_dir "loop.vasm",
+    .out = example_dir "loop.vb",
+  },
 };
 
 int build_tool(Tool tool) {

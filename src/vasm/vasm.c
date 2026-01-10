@@ -30,7 +30,8 @@ int main(int argc, char *argv[]) {
   Tokens tokens = {0};
   while (lexer.pos < sb.count)
     da_push(&tokens, next_token(&lexer));
-  Parser parser = {
+
+Parser parser = {
       .tokens = tokens,
       .file = input_file.as.str,
   };
@@ -40,12 +41,7 @@ int main(int argc, char *argv[]) {
     da_push(&exprs, temp);
   }
   Gen gen = {.exprs = exprs};
-  Program program = {0};
-  while (gen.pos <= gen.exprs.count) {
-    Program temp = gen_parse_expr(&gen);
-    for (size_t i = 0; i < temp.count; ++i)
-      da_push(&program, temp.items[i]);
-  }
+  Program program = gen_generate(&gen);
   FILE *bfile = fopen(output_file.as.str, "wb");
   assert(bfile != NULL);
   fwrite(program.items, sizeof(Inst), program.count, bfile);

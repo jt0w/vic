@@ -41,6 +41,8 @@ typedef enum {
   TK_JMP,
   TK_JZ,
   TK_JNZ,
+
+  TK_COLON,
 } TokenKind;
 
 typedef struct {

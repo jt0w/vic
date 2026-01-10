@@ -14,7 +14,7 @@ Token par_consume(Parser *parser) {
 #define END -1
 
 Token par_expect(Parser *parser, ...) {
-  Token t;
+Token t;
   StringBuilder expected = {0};
   da_push(&expected, '[');
   va_list args;
@@ -30,6 +30,7 @@ Token par_expect(Parser *parser, ...) {
       return t;
     }
   }
+  va_end(args);
 
   da_push(&expected, '\b');
   da_push(&expected, '\b');
@@ -41,6 +42,7 @@ Token par_expect(Parser *parser, ...) {
     da_push_buf(&sb, "Nothing");
   else
     da_push_buf(&sb, print_token(parser->current, false));
+  da_push(&sb, '\0');
   fprintf(stderr, "%s:%zu:%zu: error: expected (one of) '%s' but got %s \n",
           parser->file, parser->current.span.pos.row,
           parser->current.span.pos.col, expected.items, sb.items);
@@ -59,7 +61,7 @@ Token par_expect(Parser *parser, ...) {
 #define JUMP_OP()                                                              \
   do {                                                                         \
     par_consume(parser);                                                       \
-    Token arg = par_expect(parser, TK_INT_LIT, /*TK_LIT TODO: Labels*/ END);   \
+    Token arg = par_expect(parser, TK_INT_LIT, TK_LIT, END);                   \
     da_push(&expr.args, arg);                                                  \
   } while (0);
 
@@ -89,17 +91,17 @@ Expr parse_expr(Parser *parser) {
   }
 
   case TK_LIT: {
-    fprintf(stderr,
-            "%s:%zu:%zu: error: cannot start an expression with a literal\n",
-            parser->file, parser->current.span.pos.row,
-            parser->current.span.pos.col);
-    exit(1);
+    da_push(&expr.args, parser->current);
+    par_consume(parser);
+    par_expect(parser, TK_COLON, END);
+    expr.kind = EK_LABEL_DEF;
+    break;
   }
 
   case TK_PUSH: {
     expr.kind = EK_PUSH;
     par_consume(parser);
-    Token arg = par_expect(parser, TK_INT_LIT,  END);
+    Token arg = par_expect(parser, TK_INT_LIT, TK_LIT, END);
     da_push(&expr.args, arg);
     break;
   }
@@ -142,6 +144,7 @@ Expr parse_expr(Parser *parser) {
   }
   case TK_EQ: {
     expr.kind = EK_EQ;
+    par_consume(parser);
     break;
   }
   case TK_JMP: {
@@ -167,6 +170,13 @@ Expr parse_expr(Parser *parser) {
   case TK_WHITESPACE: {
     // Should be filtered out by consume
     abort();
+  }
+  case TK_COLON: {
+    fprintf(stderr,
+            "%s:%zu:%zu: error: cannot start an expression with a colon\n",
+            parser->file, parser->current.span.pos.row,
+            parser->current.span.pos.col);
+    exit(1);
   }
   }
   return expr;

@@ -12,13 +12,14 @@ TK_Map TK_MAP[] = {
 
     {TK_JMP, "TK_JMP"},         {TK_JZ, "TK_JZ"},
     {TK_JNZ, "TK_JNZ"},         {TK_NOP, "TK_NOP"},
-    {TK_DUP, "TK_DUP"},
+    {TK_DUP, "TK_DUP"},         {TK_COLON, "TK_COLON"},
+    {TK_EQ, "TK_EQ"},
 };
 
 TK_Map KeyWordMap[] = {{TK_PUSH, "push"}, {TK_POP, "pop"},   {TK_ADD, "add"},
                        {TK_SUB, "sub"},   {TK_MULT, "mult"}, {TK_DIV, "div"},
                        {TK_EQ, "eq"},     {TK_JMP, "jmp"},   {TK_NOP, "nop"},
-                       {TK_JNZ, "jnz"},   {TK_JZ, "jz"}, {TK_DUP, "dup"}};
+                       {TK_JNZ, "jnz"},   {TK_JZ, "jz"},     {TK_DUP, "dup"}};
 
 char *print_token(Token t, bool all_info) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {
@@ -40,15 +41,17 @@ char lex_consume(Lexer *lexer) {
   return lexer->current;
 }
 
-#define return_and_set_span(k)         \
-  do {                                 \
-    t.kind = (k);                      \
-    da_push(&sb, '\0');                \
-    t.span.literal = malloc(sb.count); \
-    strcpy(t.span.literal, sb.items);  \
-    t.span.pos = lexer->cpos;          \
-    da_free(sb);                       \
-    return t;                          \
+#define return_and_set_span(k)                                                 \
+  do {                                                                         \
+    t.kind = (k);                                                              \
+    da_push(&sb, '\0');                                                        \
+    t.span.literal = malloc(sb.count);                                         \
+    strcpy(t.span.literal, sb.items);                                          \
+    if ((k) == TK_LIT)                                                         \
+      t.as.str = t.span.literal;                                               \
+    t.span.pos = lexer->cpos;                                                  \
+    da_free(sb);                                                               \
+    return t;                                                                  \
   } while (0)
 
 Token next_token(Lexer *lexer) {
@@ -58,28 +61,8 @@ Token next_token(Lexer *lexer) {
   if (lexer->pos == 0)
     lex_consume(lexer);
   StringBuilder sb = {0};
-  if (isspace(lexer->current)) {
-    switch (lexer->current) {
-    case ' ': {
-      lexer->cpos.col++;
-      break;
-    }
-    case '\n': {
-      lexer->cpos.row++;
-      lexer->cpos.col = 1;
-      break;
-    }
-    case '\t': {
-      lexer->cpos.col += 8;
-      break;
-    }
-    default: {
-      assert(!"unknown space symbol");
-    }
-    }
-    da_push(&sb, lexer->current);
+  while (isspace(lexer->current)) {
     lex_consume(lexer);
-    return_and_set_span (TK_WHITESPACE);
   }
   if (isdigit(lexer->current)) {
     while (isdigit(lexer->current)) {
@@ -87,7 +70,7 @@ Token next_token(Lexer *lexer) {
       da_push(&sb, lexer->current);
       lex_consume(lexer);
     }
-    return_and_set_span (TK_INT_LIT);
+    return_and_set_span(TK_INT_LIT);
   }
   if (isalpha(lexer->current)) {
     while (isalpha(lexer->current)) {
@@ -97,13 +80,19 @@ Token next_token(Lexer *lexer) {
     da_push(&sb, '\0');
     for (size_t i = 0; i < sizeof(KeyWordMap) / sizeof(KeyWordMap[0]); ++i) {
       if (strcmp(KeyWordMap[i].id, sb.items) == 0) {
-        return_and_set_span (KeyWordMap[i].kind);
+        return_and_set_span(KeyWordMap[i].kind);
       }
     }
-    t.as.str = t.span.literal;
-    return_and_set_span (TK_LIT);
+    return_and_set_span(TK_LIT);
   }
+
   da_push(&sb, lexer->current);
+  switch (lexer->current) {
+  case ':':
+    lex_consume(lexer);
+    return_and_set_span(TK_COLON);
+    break;
+  }
   lex_consume(lexer);
-  return_and_set_span (TK_ERR);
+  return_and_set_span(TK_ERR);
 }
