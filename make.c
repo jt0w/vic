@@ -15,17 +15,17 @@ typedef struct {
 
 const Tool TOOLS[] = {
     {
-      .name = "vic",
-      .src = src_dir "vic/vic.c",
-      .out = build_dir "vic"
+      .name = "vl",
+      .src = src_dir "vl/vl.c",
+      .out = build_dir "vl"
     },
     {
-      .name = "vism",
-      .src = src_dir "vism/vism.c "
-             src_dir "vism/lexer.c "
-             src_dir "vism/parser.c "
-             src_dir "vism/gen.c ",
-     .out = build_dir "vism"
+      .name = "vasm",
+      .src = src_dir "vasm/vasm.c "
+             src_dir "vasm/lexer.c "
+             src_dir "vasm/parser.c "
+             src_dir "vasm/gen.c ",
+     .out = build_dir "vasm"
     },
 };
 

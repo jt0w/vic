@@ -123,18 +123,18 @@ int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
   VM vm = {0};
-  shift(argv, argc);
+  const char *prog = shift(argv, argc);
 
   if (argc != 1) {
-    fprintln(stderr, "Usage: vic <file>");
-    fprintln(stderr, "ERROR: Did not provide any args");
+    fprintln(stderr, "Usage: %s <file>", prog);
+    log(ERROR, "Did not provide any args");
     return 1;
   }
 
   char *file_name = shift(argv, argc);
   FILE *file = fopen(file_name, "rb");
   if (file == NULL) {
-    fprintln(stderr, "ERROR: File not found");
+    log(ERROR, "File not found");
     return 1;
   }
 

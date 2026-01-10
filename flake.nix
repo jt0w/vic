@@ -1,5 +1,5 @@
 {
-  description = "A flake for c";
+  description = "Flake for vl";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -17,15 +17,15 @@
       }:  {
         devShells.default = pkgs.mkShell {
             inputsFrom = [
-              self'.packages.vic
-              self'.packages.vism
+              self'.packages.vl
+              self'.packages.vasm
             ];
             buildInputs = with pkgs; [uncrustify];
         };
 
           packages = {
-            vic  = pkgs.callPackage ./lib/buildPackage.nix {name = "vic"; version  = "0.0.1";chimera = inputs.chimera;};
-            vism = pkgs.callPackage ./lib/buildPackage.nix {name = "vism"; version = "0.0.1";chimera = inputs.chimera;};
+            vl  =  pkgs.callPackage ./lib/buildPackage.nix {name = "vl";   version  = "0.0.1";  chimera = inputs.chimera;};
+            vasm = pkgs.callPackage ./lib/buildPackage.nix {name = "vasm"; version = "0.0.1";   chimera = inputs.chimera;};
         };
       };
     };

@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
   Flag input_file = parse_str_flag("-input", "-i", NULL);
 
   if (!input_file.as.str) {
-    fprintln(stderr, "Usage: vism -o <output> -i <file>");
+    fprintln(stderr, "Usage: vasm -o <output.> -i <input.vasm>");
     log(ERROR, "Did not provide input file");
     return 0;
   }
