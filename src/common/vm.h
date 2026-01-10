@@ -46,4 +46,16 @@ typedef struct {
   size_t count;
   size_t cap;
 } Program;
+
+typedef struct {
+  size_t count;
+  size_t cap;
+  Word *items;
+} Stack;
+
+typedef struct {
+  Program program;
+  Stack stack;
+  size_t pc;
+} VM;
 #endif // _VM_H
