@@ -5,3 +5,11 @@
 
 `vl` is a virtual machine in c.
 It comes with the vasm assembler.
+
+## Quickstart
+
+```shell
+$ gcc -o make make.c
+$ ./make -build_examples
+$ ./build/vl examples/nice.vb
+```
