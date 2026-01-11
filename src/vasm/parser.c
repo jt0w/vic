@@ -16,7 +16,7 @@ Token par_expect(Parser *parser, ...) {
   for (TokenKind tk = va_arg(args, TokenKind); (int)tk != END;
        tk = va_arg(args, TokenKind)) {
     da_push_buf(&expected,
-                temp_sprintf("%s ,", print_token((Token){.kind = tk}, false)));
+                temp_sprintf("%s ,", token_name((Token){.kind = tk})));
     if (parser->current.kind == tk) {
       t = parser->current;
       par_consume(parser);
@@ -35,7 +35,7 @@ Token par_expect(Parser *parser, ...) {
   if (parser->current.kind == TK_ERR)
     da_push_buf(&sb, "Nothing");
   else
-    da_push_buf(&sb, print_token(parser->current, false));
+    da_push_buf(&sb, token_name(parser->current));
   da_push(&sb, '\0');
   fprintf(stderr, "%s:%zu:%zu: error: expected (one of) '%s' but got %s \n",
           parser->file, parser->current.span.pos.row,

@@ -64,8 +64,8 @@ typedef struct {
   } as;
 } Token;
 
-
-char *print_token(Token t, bool with_value);
+char *token_name(Token t);
+char *print_token(const char *file, Token t);
 
 typedef struct {
   Token *items;

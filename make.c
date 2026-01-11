@@ -9,6 +9,14 @@
 
 #define example_dir "examples/"
 
+typedef enum {
+  MODE_RELEASE,
+  MODE_DEBUG,
+} CompMode;
+
+static CompMode MODE = {0};
+
+
 typedef struct {
   char *name;
   char *out;
@@ -48,6 +56,7 @@ int build_tool(Tool tool) {
   Cmd cmd = {0};
   cmd_push(&cmd, "gcc", "-std="c_std, "-I./src/common");
   cmd_push(&cmd, "-Wall","-Wextra","-Wswitch-enum", "-pedantic", "-ggdb");
+  if (MODE == MODE_DEBUG) cmd_push(&cmd, "-DDEBUG_MODE");
   cmd_push(&cmd, "-o", tool.out);
   cmd_push(&cmd, tool.src);
   return cmd_exec(&cmd);
@@ -66,6 +75,15 @@ int main(int argc, char **argv) {
   create_dir(build_dir);
   shift(argv, argc);
   Flag build_examples = parse_boolean_flag("-build_examples", "-be", false);
+  Flag mode_flag = parse_str_flag("-mode", "-m", "release");
+  if (strcmp(mode_flag.as.str, "release") == 0) {
+    MODE = MODE_RELEASE;
+  } else if (strcmp(mode_flag.as.str, "debug") == 0) {
+    MODE = MODE_DEBUG;
+  } else {
+    log(ERROR, "Uknown compilation mode `%s`", mode_flag.as.str);
+    return 1;
+  }
 
   for (size_t i = 0; i < sizeof(TOOLS) / sizeof(TOOLS[0]); ++i) {
     log(CHIMERA_INFO, "Compiling %s", TOOLS[i].name);

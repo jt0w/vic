@@ -8,6 +8,8 @@
 #include "parser.h"
 
 #include <vm.h>
+#include <debug.h>
+
 
 #define VERSION "0.0.1"
 
@@ -30,7 +32,9 @@ int main(int argc, char *argv[]) {
   Tokens tokens = {0};
   while (lexer.pos < sb.count) {
     da_push(&tokens, next_token(&lexer));
-    // println("%s", print_token(tokens.items [tokens.count - 1], true));
+#ifdef DEBUG_MODE
+   println("%s", print_token(input_file.as.str, tokens.items [tokens.count - 1]));
+#endif
   }
 
   Parser parser = {

@@ -26,19 +26,28 @@ TK_Map KeyWordMap[] = {{TK_PUSH, "push"}, {TK_POP, "pop"},   {TK_ADD, "add"},
                        {TK_EQ, "eq"},     {TK_JMP, "jmp"},   {TK_NOP, "nop"},
                        {TK_JNZ, "jnz"},   {TK_JZ, "jz"},     {TK_DUP, "dup"}};
 
-char *print_token(Token t, bool all_info) {
+
+char *token_name(Token t) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {
     if (TK_MAP[i].kind == t.kind) {
-      if (all_info)
-        return temp_sprintf("%zu: %s = `%s`", t.span.pos.row, TK_MAP[i].id,
-                            t.span.literal);
-      else
-        return temp_sprintf("`%s`", TK_MAP[i].id);
+      return TK_MAP[i].id;
     }
   }
 
   fprintf(stderr, "Tokenkind %d is not included in TK_MAP\n", t.kind);
-  exit(1);
+  abort();
+}
+
+char *print_token(const char *file, Token t) {
+  for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {
+    if (TK_MAP[i].kind == t.kind) {
+      return temp_sprintf("%s:%zu:%zu: %s = `%s`", file, t.span.pos.row,
+          t.span.pos.col, TK_MAP[i].id, t.span.literal);
+    }
+  }
+
+  fprintf(stderr, "Tokenkind %d is not included in TK_MAP\n", t.kind);
+  abort();
 }
 
 char lex_consume(Lexer *lexer) {
