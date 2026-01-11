@@ -14,6 +14,7 @@
 int main(int argc, char *argv[]) {
   shift(argv, argc);
 
+
   Flag output_file = parse_str_flag("-output", "-o", "out.bin");
   Flag input_file = parse_str_flag("-input", "-i", NULL);
 
@@ -24,12 +25,13 @@ int main(int argc, char *argv[]) {
   }
 
   StringBuilder sb = {0};
-  read_file((char *)input_file.as.str, &sb);
-  Lexer lexer = {
-      .input = sb.items, .cpos = (Position){1, 1}, .file = input_file.as.str};
+  read_file((char*)input_file.as.str, &sb);
+  Lexer lexer = {.input = sb.items, .cpos = (Position){1, 1}, .file = input_file.as.str};
   Tokens tokens = {0};
-  while (lexer.pos < sb.count)
+  while (lexer.pos < sb.count) {
     da_push(&tokens, next_token(&lexer));
+    // println("%s", print_token(tokens.items [tokens.count - 1], true));
+  }
 
   Parser parser = {
       .tokens = tokens,

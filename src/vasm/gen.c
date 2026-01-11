@@ -21,10 +21,37 @@ Program gen_generate(Gen *gen) {
                             }));
       break;
     }
+    case EK_VAR_DEF: {
+      assert(gen->current.args.count == 2);
+      Token name = gen->current.args.items[0];
+      Token value = gen->current.args.items[1];
+      Var v = {
+        .name = name.as.str,
+        .value = value.as.num,
+      };
+      da_push(&gen->vars, v);
+      break;
+    }
     case EK_PUSH: {
+      assert(gen->current.args.count == 1);
       Token arg = gen->current.args.items[0];
-      assert(arg.kind == TK_INT_LIT);
-      push(INST_PUSH(arg.as.num));
+      if (arg.kind == TK_INT_LIT) {
+        push(INST_PUSH(arg.as.num));
+      } else if (arg.kind == TK_LIT) {
+        bool found = false;
+        for (size_t i = 0; i < gen->vars.count; ++i) {
+          if (strcmp(arg.as.str, gen->vars.items[i].name) == 0) {
+            push(INST_PUSH(gen->vars.items[i].value));
+            found = true;
+          }
+        }
+        if (!found) {
+          fprintln(stderr, "error: Variable `%s` not found", arg.span.literal);
+          exit(1);
+        }
+      } else {
+        assert(!"invalid push operand");
+      }
       break;
     }
     case EK_POP: {
@@ -32,6 +59,7 @@ Program gen_generate(Gen *gen) {
       break;
     }
     case EK_DUP: {
+      assert(gen->current.args.count == 1);
       Token arg = gen->current.args.items[0];
       assert(arg.kind == TK_INT_LIT);
       push(INST_DUP(arg.as.num));
@@ -58,6 +86,7 @@ Program gen_generate(Gen *gen) {
       break;
     }
     case EK_JMP: {
+      assert(gen->current.args.count == 1);
       Token arg = gen->current.args.items[0];
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
@@ -71,6 +100,7 @@ Program gen_generate(Gen *gen) {
       break;
     }
     case EK_JZ: {
+      assert(gen->current.args.count == 1);
       Token arg = gen->current.args.items[0];
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
@@ -85,6 +115,7 @@ Program gen_generate(Gen *gen) {
       break;
     }
     case EK_JNZ: {
+      assert(gen->current.args.count == 1);
       Token arg = gen->current.args.items[0];
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
