@@ -8,18 +8,6 @@
 #include <unistd.h>
 #include <vm.h>
 
-typedef struct {
-  size_t count;
-  size_t cap;
-  Word *items;
-} Stack;
-
-typedef struct {
-  Program program;
-  Stack stack;
-  size_t pc;
-} VM;
-
 typedef enum {
   RESULT_OK,
   RESULT_ERROR_STACK_OVERFLOW,
