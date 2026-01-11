@@ -3,6 +3,17 @@
 #include "parser.h"
 
 typedef struct {
+  const char *name;
+  Word value;
+} Var;
+
+typedef struct {
+  Var *items;
+  size_t count;
+  size_t cap;
+} Vars;
+
+typedef struct {
   Word pos;
   const char *name;
 } Label;
@@ -31,6 +42,7 @@ typedef struct {
 
   Labels labels;
   UnresolvedJumps unresolved_jumps;
+  Vars vars;
 } Gen;
 
 Expr gen_consume(Gen *gen);

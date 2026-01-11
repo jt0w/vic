@@ -43,15 +43,6 @@ Token par_expect(Parser *parser, ...) {
   exit(1);
 }
 
-#define BIN_OP()                                                               \
-  do {                                                                         \
-    par_consume(parser);                                                       \
-    Token lhs = par_expect(parser, TK_INT_LIT, TK_LIT, END);                   \
-    Token rhs = par_expect(parser, TK_INT_LIT, TK_LIT, END);                   \
-    da_push(&expr.args, lhs);                                                  \
-    da_push(&expr.args, rhs);                                                  \
-  } while (0);
-
 #define JUMP_OP()                                                              \
   do {                                                                         \
     par_consume(parser);                                                       \
@@ -161,6 +152,21 @@ Expr parse_expr(Parser *parser) {
     par_consume(parser);
     break;
   }
+  case TK_PERCENT: {
+    par_consume(parser);
+    Token t = par_expect(parser, TK_LIT, END);
+    if (strcmp(t.as.str, "def") == 0) {
+      expr.kind = EK_VAR_DEF;
+      da_push(&expr.args, par_expect(parser, TK_LIT, END));
+      da_push(&expr.args, par_expect(parser, TK_INT_LIT, END));
+    } else {
+      fprintln(stderr,
+          "%s:%zu:%zu: error: Unexpected literal: `%s`",
+          parser->file, t.span.pos.row, t.span.pos.col, t.span.literal);
+      exit(1);
+    }
+    break;
+  }
   case TK_SEMICOLON: {
     size_t row = parser->current.span.pos.row;
     while (parser->current.span.pos.row == row &&
@@ -170,8 +176,8 @@ Expr parse_expr(Parser *parser) {
     return parse_expr(parser);
   }
   case TK_COLON: {
-    fprintf(stderr,
-            "%s:%zu:%zu: error: cannot start an expression with a colon\n",
+    fprintln(stderr,
+            "%s:%zu:%zu: error: cannot start an expression with a colon",
             parser->file, parser->current.span.pos.row,
             parser->current.span.pos.col);
     exit(1);

@@ -18,6 +18,7 @@ TK_Map TK_MAP[] = {
     {TK_COLON, "TK_COLON"},
     {TK_EQ, "TK_EQ"},
     {TK_SEMICOLON, "TK_SEMICOLON"},
+    {TK_PERCENT, "TK_PERCENT"},
 };
 
 TK_Map KeyWordMap[] = {{TK_PUSH, "push"}, {TK_POP, "pop"},   {TK_ADD, "add"},
@@ -104,6 +105,9 @@ Token next_token(Lexer *lexer) {
   case ';':
     lex_consume(lexer);
     return_and_set_span(TK_SEMICOLON);
+  case '%':
+    lex_consume(lexer);
+    return_and_set_span(TK_PERCENT);
   }
   lex_consume(lexer);
   return_and_set_span(TK_ERR);

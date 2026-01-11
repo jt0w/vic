@@ -5,6 +5,7 @@
 #include <vm.h>
 
 typedef enum {
+  EK_NOP,
   EK_PUSH,
   EK_POP,
   EK_DUP,
@@ -16,10 +17,12 @@ typedef enum {
   EK_JMP,
   EK_JZ,
   EK_JNZ,
+
   EK_INT,
   EK_LIT,
+
   EK_LABEL_DEF,
-  EK_NOP,
+  EK_VAR_DEF,
 } ExprKind;
 
 typedef struct {
