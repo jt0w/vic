@@ -1,4 +1,5 @@
 ; count to N
+; %def N 69
 %def N 420
 push 1
 push 1

@@ -25,11 +25,18 @@ Program gen_generate(Gen *gen) {
       assert(gen->current.args.count == 2);
       Token name = gen->current.args.items[0];
       Token value = gen->current.args.items[1];
-      Var v = {
-        .name = name.as.str,
-        .value = value.as.num,
-      };
-      da_push(&gen->vars, v);
+      int found_index = -1;
+      for (size_t i = 0; i < gen->vars.count; ++i) {
+        if (strcmp(name.as.str, gen->vars.items[i].name) == 0) {
+          found_index = (int)i;
+        }
+      }
+      if (found_index != -1) {
+        gen->vars.items[found_index].value = value.as.num;
+      } else {
+        da_push(&gen->vars,
+                ((Var){.name = name.as.str, .value = value.as.num}));
+      }
       break;
     }
     case EK_PUSH: {
@@ -90,7 +97,7 @@ Program gen_generate(Gen *gen) {
       Token arg = gen->current.args.items[0];
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
-                                            .expr_pos = gen->pos-1,
+                                            .expr_pos = gen->pos - 1,
                                             .program_pos = p.count,
                                         }));
         push(INST_JMP(0));
@@ -104,7 +111,7 @@ Program gen_generate(Gen *gen) {
       Token arg = gen->current.args.items[0];
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
-                                            .expr_pos = gen->pos-1,
+                                            .expr_pos = gen->pos - 1,
                                             .program_pos = p.count,
                                         }));
         push(INST_JZ(0));
@@ -119,7 +126,7 @@ Program gen_generate(Gen *gen) {
       Token arg = gen->current.args.items[0];
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
-                                            .expr_pos = gen->pos-1,
+                                            .expr_pos = gen->pos - 1,
                                             .program_pos = p.count,
                                         }));
         push(INST_JNZ(0));
