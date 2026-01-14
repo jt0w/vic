@@ -3,7 +3,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
-typedef uint64_t Word;
+typedef union {
+  uint64_t as_u64;
+  void *as_pointer;
+} Word;
+
+#define WORD_U64(x) ((Word){.as_u64 = (x)})
+#define WORD_POINTER(x) ((Word){.as_pointer = (x)})
 
 typedef enum {
   OP_NOP = 0x0,
@@ -21,11 +27,14 @@ typedef enum {
   OP_JMP,
   OP_JNZ,
   OP_JZ,
+
+  OP_ALLOC8,
+  OP_WRITE8,
 } OpCode;
 
 typedef struct {
   OpCode opcode;
-  uint64_t operand;
+  Word operand;
 } Inst;
 
 #define INST_NOP     ((Inst){.opcode = OP_NOP                })
@@ -40,6 +49,8 @@ typedef struct {
 #define INST_JMP(x)  ((Inst){.opcode = OP_JMP, .operand = (x)})
 #define INST_JNZ(x)  ((Inst){.opcode = OP_JNZ, .operand = (x)})
 #define INST_JZ(x)   ((Inst){.opcode = OP_JZ,  .operand = (x)})
+#define INST_ALLOC8    ((Inst){.opcode = OP_ALLOC8           })
+#define INST_WRITE8    ((Inst){.opcode = OP_WRITE8           })
 
 typedef struct {
   Inst *items;
@@ -53,9 +64,16 @@ typedef struct {
   Word *items;
 } Stack;
 
+
+#define VM_MEMORY_CAP 1024
+
 typedef struct {
   Program program;
-  Stack stack;
   size_t pc;
+
+  Stack stack;
+  // TODO: make this grow
+  uint8_t memory[VM_MEMORY_CAP];
+  size_t memory_pos;
 } VM;
 #endif // _VM_H

@@ -15,8 +15,8 @@ Program gen_generate(Gen *gen) {
       gen_consume(gen);
     switch (gen->current.kind) {
     case EK_LABEL_DEF: {
-      da_push(&gen->labels, ((Label){
-                                .pos = p.count,
+      da_push(&gen->labels, ((Label) {
+                                .pos = {p.count},
                                 .name = gen->current.args.items[0].as.str,
                             }));
       break;
@@ -100,7 +100,7 @@ Program gen_generate(Gen *gen) {
                                             .expr_pos = gen->pos - 1,
                                             .program_pos = p.count,
                                         }));
-        push(INST_JMP(0));
+        push(INST_JMP(WORD_U64(0)));
       } else if (arg.kind == TK_INT_LIT) {
         push(INST_JZ(arg.as.num));
       }
@@ -114,7 +114,7 @@ Program gen_generate(Gen *gen) {
                                             .expr_pos = gen->pos - 1,
                                             .program_pos = p.count,
                                         }));
-        push(INST_JZ(0));
+        push(INST_JZ(WORD_U64(0)));
       } else if (arg.kind == TK_INT_LIT) {
         push(INST_JZ(arg.as.num));
       }
@@ -129,7 +129,7 @@ Program gen_generate(Gen *gen) {
                                             .expr_pos = gen->pos - 1,
                                             .program_pos = p.count,
                                         }));
-        push(INST_JNZ(0));
+        push(INST_JNZ(WORD_U64(0)));
       } else if (arg.kind == TK_INT_LIT) {
         push(INST_JNZ(arg.as.num));
       }
@@ -137,6 +137,14 @@ Program gen_generate(Gen *gen) {
     }
     case EK_NOP: {
       push(INST_NOP);
+      break;
+    }
+    case EK_ALLOC8: {
+      push(INST_ALLOC8);
+      break;
+    }
+    case EK_WRITE8: {
+      push(INST_WRITE8);
       break;
     }
 

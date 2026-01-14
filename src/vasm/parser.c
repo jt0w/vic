@@ -152,6 +152,16 @@ Expr parse_expr(Parser *parser) {
     par_consume(parser);
     break;
   }
+  case TK_ALLOC8: {
+    par_consume(parser);
+    expr.kind = EK_ALLOC8;
+    break;
+  }
+  case TK_WRITE8: {
+    par_consume(parser);
+    expr.kind = EK_WRITE8;
+    break;
+  }
   case TK_PERCENT: {
     par_consume(parser);
     Token t = par_expect(parser, TK_LIT, END);
@@ -181,6 +191,13 @@ Expr parse_expr(Parser *parser) {
             parser->file, parser->current.span.pos.row,
             parser->current.span.pos.col);
     exit(1);
+  }
+  default: {
+    fprintln(stderr,
+            "%s:%zu:%zu: error: tokenkind `%s` not covered in parser",
+            parser->file, parser->current.span.pos.row,
+            parser->current.span.pos.col, token_name(parser->current));
+    abort();
   }
   }
   return expr;
