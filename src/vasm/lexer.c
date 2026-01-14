@@ -19,13 +19,15 @@ TK_Map TK_MAP[] = {
     {TK_EQ, "TK_EQ"},
     {TK_SEMICOLON, "TK_SEMICOLON"},
     {TK_PERCENT, "TK_PERCENT"},
+    {TK_ALLOC, "TK_ALLOC"},
+    {TK_WRITE, "TK_WRITE"},
 };
 
-TK_Map KeyWordMap[] = {{TK_PUSH, "push"}, {TK_POP, "pop"},   {TK_ADD, "add"},
-                       {TK_SUB, "sub"},   {TK_MULT, "mult"}, {TK_DIV, "div"},
-                       {TK_EQ, "eq"},     {TK_JMP, "jmp"},   {TK_NOP, "nop"},
-                       {TK_JNZ, "jnz"},   {TK_JZ, "jz"},     {TK_DUP, "dup"}};
-
+TK_Map KeyWordMap[] = {{TK_PUSH, "push"},   {TK_POP, "pop"},    {TK_ADD, "add"},
+                       {TK_SUB, "sub"},     {TK_MULT, "mult"},  {TK_DIV, "div"},
+                       {TK_EQ, "eq"},       {TK_JMP, "jmp"},    {TK_NOP, "nop"},
+                       {TK_JNZ, "jnz"},     {TK_JZ, "jz"},      {TK_DUP, "dup"},
+                       {TK_WRITE, "write"}, {TK_ALLOC, "alloc"}};
 
 char *token_name(Token t) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {
@@ -42,7 +44,7 @@ char *print_token(const char *file, Token t) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {
     if (TK_MAP[i].kind == t.kind) {
       return temp_sprintf("%s:%zu:%zu: %s = `%s`", file, t.span.pos.row,
-          t.span.pos.col, TK_MAP[i].id, t.span.literal);
+                          t.span.pos.col, TK_MAP[i].id, t.span.literal);
     }
   }
 
@@ -85,15 +87,15 @@ Token next_token(Lexer *lexer) {
   }
   if (isdigit(lexer->current)) {
     while (isdigit(lexer->current)) {
-      t.as.num = t.as.num * 10 + lexer->current - '0';
       da_push(&sb, lexer->current);
+      t.as.num.as_u64 = t.as.num.as_u64 * 10 + lexer->current - '0';
       lex_consume(lexer);
     }
     return_and_set_span(TK_INT_LIT);
   }
 
-  if (isalpha(lexer->current)) {
-    while (isalpha(lexer->current)) {
+  if (isalnum(lexer->current)) {
+    while (isalnum(lexer->current)) {
       da_push(&sb, lexer->current);
       lex_consume(lexer);
     }

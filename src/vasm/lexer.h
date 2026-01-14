@@ -41,6 +41,9 @@ typedef enum {
   TK_JZ,
   TK_JNZ,
 
+  TK_ALLOC,
+  TK_WRITE,
+
   TK_COLON,
   TK_SEMICOLON,
   TK_PERCENT,

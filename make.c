@@ -50,6 +50,11 @@ const Tool EXAMPLES[] = {
     .src = example_dir "counter.vasm",
     .out = example_dir "counter.vb",
   },
+  {
+    .name = "mem",
+    .src = example_dir "mem.vasm",
+    .out = example_dir "mem.vb",
+  },
 };
 
 int build_tool(Tool tool) {
