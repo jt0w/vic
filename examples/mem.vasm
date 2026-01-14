@@ -1,3 +1,6 @@
-alloc8
+%def allocc 1
+%def writec 2
+
+alloc allocc
 push 69
-write8
+write writec

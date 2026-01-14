@@ -28,8 +28,8 @@ typedef enum {
   OP_JNZ,
   OP_JZ,
 
-  OP_ALLOC8,
-  OP_WRITE8,
+  OP_ALLOC,
+  OP_WRITE,
 } OpCode;
 
 typedef struct {
@@ -37,20 +37,20 @@ typedef struct {
   Word operand;
 } Inst;
 
-#define INST_NOP     ((Inst){.opcode = OP_NOP                })
-#define INST_PUSH(x) ((Inst){.opcode = OP_PUSH,.operand = (x)})
-#define INST_POP     ((Inst){.opcode = OP_POP                })
-#define INST_DUP(x)  ((Inst){.opcode = OP_DUP, .operand = (x)})
-#define INST_ADD     ((Inst){.opcode = OP_ADD                })
-#define INST_SUB     ((Inst){.opcode = OP_SUB                })
-#define INST_MULT    ((Inst){.opcode = OP_MULT               })
-#define INST_DIV     ((Inst){.opcode = OP_DIV                })
-#define INST_EQ      ((Inst){.opcode = OP_EQ                 })
-#define INST_JMP(x)  ((Inst){.opcode = OP_JMP, .operand = (x)})
-#define INST_JNZ(x)  ((Inst){.opcode = OP_JNZ, .operand = (x)})
-#define INST_JZ(x)   ((Inst){.opcode = OP_JZ,  .operand = (x)})
-#define INST_ALLOC8    ((Inst){.opcode = OP_ALLOC8           })
-#define INST_WRITE8    ((Inst){.opcode = OP_WRITE8           })
+#define INST_NOP      ((Inst){.opcode = OP_NOP                   })
+#define INST_PUSH(x)  ((Inst){.opcode = OP_PUSH,   .operand = (x)})
+#define INST_POP      ((Inst){.opcode = OP_POP                   })
+#define INST_DUP(x)   ((Inst){.opcode = OP_DUP,    .operand = (x)})
+#define INST_ADD      ((Inst){.opcode = OP_ADD                   })
+#define INST_SUB      ((Inst){.opcode = OP_SUB                   })
+#define INST_MULT     ((Inst){.opcode = OP_MULT                  })
+#define INST_DIV      ((Inst){.opcode = OP_DIV                   })
+#define INST_EQ       ((Inst){.opcode = OP_EQ                    })
+#define INST_JMP(x)   ((Inst){.opcode = OP_JMP,    .operand = (x)})
+#define INST_JNZ(x)   ((Inst){.opcode = OP_JNZ,    .operand = (x)})
+#define INST_JZ(x)    ((Inst){.opcode = OP_JZ,     .operand = (x)})
+#define INST_ALLOC(x) ((Inst){.opcode = OP_ALLOC, .operand = (x)})
+#define INST_WRITE(x) ((Inst){.opcode = OP_WRITE, .operand = (x)})
 
 typedef struct {
   Inst *items;
@@ -63,7 +63,6 @@ typedef struct {
   size_t cap;
   Word *items;
 } Stack;
-
 
 #define VM_MEMORY_CAP 1024
 

@@ -41,8 +41,8 @@ typedef enum {
   TK_JZ,
   TK_JNZ,
 
-  TK_ALLOC8,
-  TK_WRITE8,
+  TK_ALLOC,
+  TK_WRITE,
 
   TK_COLON,
   TK_SEMICOLON,

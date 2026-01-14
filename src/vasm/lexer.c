@@ -19,16 +19,15 @@ TK_Map TK_MAP[] = {
     {TK_EQ, "TK_EQ"},
     {TK_SEMICOLON, "TK_SEMICOLON"},
     {TK_PERCENT, "TK_PERCENT"},
-    {TK_ALLOC8, "TK_ALLOC8"},
-    {TK_WRITE8, "TK_WRITE8"},
+    {TK_ALLOC, "TK_ALLOC"},
+    {TK_WRITE, "TK_WRITE"},
 };
 
-TK_Map KeyWordMap[] = {
-    {TK_PUSH, "push"},     {TK_POP, "pop"},      {TK_ADD, "add"},
-    {TK_SUB, "sub"},       {TK_MULT, "mult"},    {TK_DIV, "div"},
-    {TK_EQ, "eq"},         {TK_JMP, "jmp"},      {TK_NOP, "nop"},
-    {TK_JNZ, "jnz"},       {TK_JZ, "jz"},        {TK_DUP, "dup"},
-    {TK_WRITE8, "write8"}, {TK_ALLOC8, "alloc8"}};
+TK_Map KeyWordMap[] = {{TK_PUSH, "push"},   {TK_POP, "pop"},    {TK_ADD, "add"},
+                       {TK_SUB, "sub"},     {TK_MULT, "mult"},  {TK_DIV, "div"},
+                       {TK_EQ, "eq"},       {TK_JMP, "jmp"},    {TK_NOP, "nop"},
+                       {TK_JNZ, "jnz"},     {TK_JZ, "jz"},      {TK_DUP, "dup"},
+                       {TK_WRITE, "write"}, {TK_ALLOC, "alloc"}};
 
 char *token_name(Token t) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {

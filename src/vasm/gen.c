@@ -8,6 +8,17 @@ Expr gen_consume(Gen *gen) {
 
 #define push(x) da_push(&p, (x))
 
+Var find_var_by_name(Gen *gen, const char *name) {
+  for (size_t i = 0; i < gen->vars.count; ++i) {
+    if (strcmp(name, gen->vars.items[i].name) == 0) {
+      return gen->vars.items[i];
+    }
+  }
+
+  fprintln(stderr, "error: Variable `%s` not found", name);
+  exit(1);
+}
+
 Program gen_generate(Gen *gen) {
   Program p = {0};
   while (gen->pos <= gen->exprs.count) {
@@ -45,17 +56,7 @@ Program gen_generate(Gen *gen) {
       if (arg.kind == TK_INT_LIT) {
         push(INST_PUSH(arg.as.num));
       } else if (arg.kind == TK_LIT) {
-        bool found = false;
-        for (size_t i = 0; i < gen->vars.count; ++i) {
-          if (strcmp(arg.as.str, gen->vars.items[i].name) == 0) {
-            push(INST_PUSH(gen->vars.items[i].value));
-            found = true;
-          }
-        }
-        if (!found) {
-          fprintln(stderr, "error: Variable `%s` not found", arg.span.literal);
-          exit(1);
-        }
+        push(INST_PUSH(find_var_by_name(gen, arg.as.str).value));
       } else {
         assert(!"invalid push operand");
       }
@@ -102,7 +103,7 @@ Program gen_generate(Gen *gen) {
                                         }));
         push(INST_JMP(WORD_U64(0)));
       } else if (arg.kind == TK_INT_LIT) {
-        push(INST_JZ(arg.as.num));
+        push(INST_JMP(arg.as.num));
       }
       break;
     }
@@ -139,12 +140,22 @@ Program gen_generate(Gen *gen) {
       push(INST_NOP);
       break;
     }
-    case EK_ALLOC8: {
-      push(INST_ALLOC8);
+    case EK_ALLOC: {
+      Token arg = gen->current.args.items[0];
+      if (arg.kind == TK_INT_LIT) {
+        push(INST_ALLOC(arg.as.num));
+      } else if (gen->current.args.items[0].kind == TK_LIT) {
+        push(INST_ALLOC(find_var_by_name(gen, arg.as.str).value));
+      }
       break;
     }
-    case EK_WRITE8: {
-      push(INST_WRITE8);
+    case EK_WRITE: {
+      Token arg = gen->current.args.items[0];
+      if (arg.kind == TK_INT_LIT) {
+        push(INST_WRITE(arg.as.num));
+      } else if (gen->current.args.items[0].kind == TK_LIT) {
+        push(INST_WRITE(find_var_by_name(gen, arg.as.str).value));
+      }
       break;
     }
 

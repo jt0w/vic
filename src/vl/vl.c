@@ -109,19 +109,25 @@ Result vm_next(VM *vm) {
     if (vm->stack.items[vm->stack.count - 1].as_u64 == 0)
       vm->pc = inst.operand.as_u64;
     break;
-  case OP_ALLOC8:
+  case OP_ALLOC:
     if (vm->memory_pos >= VM_MEMORY_CAP)
       return RESULT_ERROR_MEMORY_OVERFLOW;
-    da_push(&vm->stack, WORD_U64((uint64_t)vm->memory_pos++));
+    Word operand = inst.operand;
+    da_push(&vm->stack, WORD_U64((uint64_t)vm->memory_pos));
+    vm->memory_pos += operand.as_u64;
     break;
-  case OP_WRITE8:
+  case OP_WRITE:
     if (vm->stack.count < 2)
       return RESULT_ERROR_STACK_UNDERFLOW;
+
      uint64_t addr = vm->stack.items[vm->stack.count - 2].as_u64;
      if (addr >= VM_MEMORY_CAP)
        return RESULT_ERROR_ILLEGAL_MEMORY_ACCESS;
-     uint8_t value = (uint8_t) vm->stack.items[vm->stack.count - 1].as_u64;
-     vm->memory[addr] = value;
+
+     uint64_t count = inst.operand.as_u64;
+     uint64_t value = vm->stack.items[vm->stack.count - 1].as_u64;
+     memset(&vm->memory[addr], value, count);
+
      vm->stack.count -= 2;
     break;
   default:

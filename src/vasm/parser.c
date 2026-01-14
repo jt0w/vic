@@ -152,14 +152,16 @@ Expr parse_expr(Parser *parser) {
     par_consume(parser);
     break;
   }
-  case TK_ALLOC8: {
+  case TK_ALLOC: {
     par_consume(parser);
-    expr.kind = EK_ALLOC8;
+    expr.kind = EK_ALLOC;
+    da_push(&expr.args, par_expect(parser, TK_INT_LIT, TK_LIT, END));
     break;
   }
-  case TK_WRITE8: {
+  case TK_WRITE: {
     par_consume(parser);
-    expr.kind = EK_WRITE8;
+    expr.kind = EK_WRITE;
+    da_push(&expr.args, par_expect(parser, TK_INT_LIT, TK_LIT, END));
     break;
   }
   case TK_PERCENT: {
