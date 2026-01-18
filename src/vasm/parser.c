@@ -219,6 +219,14 @@ Expr parse_expr(Parser *parser) {
             parser->current.span.pos.col);
     exit(1);
   }
+  case TK_EOF: {
+
+    fprintln(stderr,
+            "%s:%zu:%zu: error: unexpected eof",
+            parser->file, parser->current.span.pos.row,
+            parser->current.span.pos.col);
+    abort();
+  }
   default: {
     fprintln(stderr,
             "%s:%zu:%zu: error: tokenkind `%s` not covered in parser",

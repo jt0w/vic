@@ -47,6 +47,8 @@ typedef enum {
   TK_COLON,
   TK_SEMICOLON,
   TK_PERCENT,
+
+  TK_EOF,
 } TokenKind;
 
 typedef struct {

@@ -25,6 +25,8 @@ TK_Map TK_MAP[] = {
     {TK_CALL, "TK_CALL"},
     {TK_RET, "TK_RET"},
     {TK_SWAP, "TK_SWAP"},
+
+    {TK_EOF, "TK_EOF"},
 };
 
 TK_Map KeyWordMap[] = {
@@ -116,6 +118,8 @@ Token next_token(Lexer *lexer) {
 
   da_push(&sb, lexer->current);
   switch (lexer->current) {
+  case '\0':
+    return_and_set_span(TK_EOF);
   case ':':
     lex_consume(lexer);
     return_and_set_span(TK_COLON);
