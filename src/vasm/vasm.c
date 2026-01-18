@@ -16,7 +16,6 @@
 int main(int argc, char *argv[]) {
   shift(argv, argc);
 
-
   Flag output_file = parse_str_flag("-output", "-o", "out.bin");
   Flag input_file = parse_str_flag("-input", "-i", NULL);
 
