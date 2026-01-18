@@ -105,6 +105,14 @@ Expr parse_expr(Parser *parser) {
     break;
   }
 
+  case TK_SWAP: {
+    expr.kind = EK_SWAP;
+    par_consume(parser);
+    Token arg = par_expect(parser, TK_INT_LIT, END);
+    da_push(&expr.args, arg);
+    break;
+  }
+
   case TK_ADD: {
     expr.kind = EK_ADD;
     par_consume(parser);

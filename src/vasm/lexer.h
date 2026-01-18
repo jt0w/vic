@@ -29,21 +29,17 @@ typedef enum {
   TK_PUSH,
   TK_POP,
   TK_DUP,
-
+  TK_SWAP,
   TK_ADD,
   TK_SUB,
   TK_MULT,
   TK_DIV,
-
   TK_EQ,
-
   TK_JMP,
   TK_JZ,
   TK_JNZ,
-
   TK_ALLOC,
   TK_WRITE,
-
   TK_CALL,
   TK_RET,
 

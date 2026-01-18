@@ -25,8 +25,22 @@ Result vm_pop(VM *vm, Inst inst) {
 Result vm_dup(VM *vm, Inst inst) {
   if (vm->stack.count < 1)
     return RESULT_ERROR_STACK_UNDERFLOW;
+  if ((int64_t)vm->stack.count - (int64_t)1 - (int64_t)inst.operand.as_u64 < (int64_t)0)
+    return RESULT_ERROR_STACK_UNDERFLOW;
   da_push(&vm->stack,
           vm->stack.items[vm->stack.count - 1 - inst.operand.as_u64]);
+  return RESULT_OK;
+}
+
+Result vm_swap(VM *vm, Inst inst) {
+  if (vm->stack.count < 2)
+    return RESULT_ERROR_STACK_UNDERFLOW;
+  if ((int64_t)vm->stack.count - (int64_t)1 - (int64_t)inst.operand.as_u64 < (int64_t)0)
+    return RESULT_ERROR_STACK_UNDERFLOW;
+  Word top = vm->stack.items[vm->stack.count - 1];
+  Word swap = vm->stack.items[vm->stack.count - 1 - inst.operand.as_u64];
+  vm->stack.items[vm->stack.count - 1] = swap;
+  vm->stack.items[vm->stack.count - 1 - inst.operand.as_u64] = top;
   return RESULT_OK;
 }
 

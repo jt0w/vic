@@ -35,6 +35,14 @@ const Instruction_Mapping INST_MAP[OPCODE_COUNT] = {
       .outputs = {TYPE_INT},
       .exe = vm_dup,
     },
+    [OP_SWAP] = {
+      .code = OP_SWAP,
+      .name = "swap",
+      .has_operand = true,
+      .inputs = {TYPE_INT},
+      .outputs = {TYPE_INT},
+      .exe = vm_swap,
+    },
     [OP_ADD] = {
       .code = OP_ADD,
       .name = "add",

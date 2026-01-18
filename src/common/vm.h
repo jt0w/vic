@@ -17,6 +17,7 @@ typedef enum {
   OP_PUSH,
   OP_POP,
   OP_DUP,
+  OP_SWAP,
 
   OP_ADD,
   OP_SUB,
@@ -45,6 +46,7 @@ typedef struct {
 #define INST_PUSH(x)  ((Inst){.opcode = OP_PUSH,   .operand = (x)})
 #define INST_POP      ((Inst){.opcode = OP_POP                   })
 #define INST_DUP(x)   ((Inst){.opcode = OP_DUP,    .operand = (x)})
+#define INST_SWAP(x)  ((Inst){.opcode = OP_SWAP,   .operand = (x)})
 #define INST_ADD      ((Inst){.opcode = OP_ADD                   })
 #define INST_SUB      ((Inst){.opcode = OP_SUB                   })
 #define INST_MULT     ((Inst){.opcode = OP_MULT                  })
@@ -55,7 +57,7 @@ typedef struct {
 #define INST_JZ(x)    ((Inst){.opcode = OP_JZ,     .operand = (x)})
 #define INST_ALLOC(x) ((Inst){.opcode = OP_ALLOC, .operand = (x)})
 #define INST_WRITE(x) ((Inst){.opcode = OP_WRITE, .operand = (x)})
-#define INST_RET      ((Inst){.opcode = OP_RET                   })
+#define INST_RET      ((Inst){.opcode = OP_RET                  })
 
 typedef struct {
   Inst *items;
