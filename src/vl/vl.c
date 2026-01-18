@@ -6,18 +6,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <vm.h>
 #include <debug.h>
+#include <vm.h>
 
-typedef enum {
-  RESULT_OK,
-  RESULT_ERROR_STACK_OVERFLOW,
-  RESULT_ERROR_STACK_UNDERFLOW,
-  RESULT_ERROR_ILLEGAL_INST,
-  RESULT_ERROR_ILLEGAL_INST_ACCESS,
-  RESULT_ERROR_MEMORY_OVERFLOW,
-  RESULT_ERROR_ILLEGAL_MEMORY_ACCESS,
-} Result;
 
 const char *result_to_str(Result e) {
   switch (e) {
@@ -45,107 +36,7 @@ Result vm_next(VM *vm) {
     return RESULT_ERROR_ILLEGAL_INST_ACCESS;
   }
   Inst inst = vm->program.items[vm->pc++];
-  switch (inst.opcode) {
-  case OP_NOP:
-    break;
-  case OP_PUSH:
-    da_push(&vm->stack, inst.operand);
-    break;
-  case OP_POP:
-    if (vm->stack.count == 0)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    vm->stack.count--;
-    break;
-  case OP_DUP:
-    if (vm->stack.count < 1)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    da_push(&vm->stack,
-            vm->stack.items[vm->stack.count - 1 - inst.operand.as_u64]);
-    break;
-  case OP_ADD:
-    if (vm->stack.count < 2)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    vm->stack.items[vm->stack.count - 2].as_u64 +=
-        vm->stack.items[vm->stack.count - 1].as_u64;
-    vm->stack.count--;
-    break;
-  case OP_SUB:
-    if (vm->stack.count < 2)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    vm->stack.items[vm->stack.count - 2].as_u64 -=
-        vm->stack.items[vm->stack.count - 1].as_u64;
-    vm->stack.count--;
-    break;
-  case OP_MULT:
-    if (vm->stack.count < 2)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    vm->stack.items[vm->stack.count - 2].as_u64 *=
-        vm->stack.items[vm->stack.count - 1].as_u64;
-    vm->stack.count--;
-    break;
-  case OP_DIV:
-    if (vm->stack.count < 2)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    vm->stack.items[vm->stack.count - 2].as_u64 /=
-        vm->stack.items[vm->stack.count - 1].as_u64;
-    vm->stack.count--;
-    break;
-  case OP_EQ:
-    if (vm->stack.count < 2)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    vm->stack.items[vm->stack.count - 2].as_u64 =
-        vm->stack.items[vm->stack.count - 1].as_u64 ==
-        vm->stack.items[vm->stack.count - 2].as_u64;
-    vm->stack.count--;
-    break;
-  case OP_JMP:
-    vm->pc = inst.operand.as_u64;
-    break;
-  case OP_JNZ:
-    if (vm->stack.count < 1)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    if (vm->stack.items[vm->stack.count - 1].as_u64 != 0)
-      vm->pc = inst.operand.as_u64;
-    vm->stack.count--;
-    break;
-  case OP_JZ:
-    if (vm->stack.count < 1)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    if (vm->stack.items[vm->stack.count - 1].as_u64 == 0)
-      vm->pc = inst.operand.as_u64;
-    vm->stack.count--;
-    break;
-  case OP_ALLOC:
-    if (vm->memory_pos >= VM_MEMORY_CAP)
-      return RESULT_ERROR_MEMORY_OVERFLOW;
-    Word operand = inst.operand;
-    da_push(&vm->stack, WORD_U64((uint64_t)vm->memory_pos));
-    vm->memory_pos += operand.as_u64;
-    break;
-  case OP_WRITE:
-    if (vm->stack.count < 2)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-
-     uint64_t addr = vm->stack.items[vm->stack.count - 2].as_u64;
-     if (addr >= VM_MEMORY_CAP)
-       return RESULT_ERROR_ILLEGAL_MEMORY_ACCESS;
-
-     uint64_t count = inst.operand.as_u64;
-     uint64_t value = vm->stack.items[vm->stack.count - 1].as_u64;
-     memset(&vm->memory[addr], value, count);
-
-     vm->stack.count -= 2;
-    break;
-  case OP_RET:
-    if (vm->stack.count < 1)
-      return RESULT_ERROR_STACK_UNDERFLOW;
-    vm->pc = vm->stack.items[vm->stack.count - 1].as_u64;
-    vm->stack.count--;
-    break;
-  default:
-    return RESULT_ERROR_ILLEGAL_INST;
-  }
-  return RESULT_OK;
+  return INST_MAP[inst.opcode].exe(vm, inst);
 }
 
 int main(int argc, char *argv[]) {
