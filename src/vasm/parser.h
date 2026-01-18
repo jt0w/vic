@@ -17,13 +17,12 @@ typedef enum {
   EK_JMP,
   EK_JZ,
   EK_JNZ,
-
   EK_ALLOC,
   EK_WRITE,
-
+  EK_CALL,
+  EK_RET,
   EK_INT,
   EK_LIT,
-
   EK_LABEL_DEF,
   EK_VAR_DEF,
 } ExprKind;

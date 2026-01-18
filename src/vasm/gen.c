@@ -158,6 +158,24 @@ Program gen_generate(Gen *gen) {
       }
       break;
     }
+    case EK_CALL: {
+      push(INST_PUSH(WORD_U64(p.count+1)));
+      Token arg = gen->current.args.items[0];
+      if (arg.kind == TK_LIT) {
+        da_push(&gen->unresolved_jumps, ((UnresolvedJump){
+                                            .expr_pos = gen->pos - 1,
+                                            .program_pos = p.count,
+                                        }));
+        push(INST_JMP(WORD_U64(0)));
+      } else if (arg.kind == TK_INT_LIT) {
+        push(INST_JMP(arg.as.num));
+      }
+      break;
+    }
+    case EK_RET: {
+      push(INST_RET);
+      break;
+    }
 
     case EK_INT:
     case EK_LIT: {
@@ -175,7 +193,7 @@ Program gen_generate(Gen *gen) {
   for (size_t i = 0; i < gen->unresolved_jumps.count; ++i) {
     UnresolvedJump jmp = gen->unresolved_jumps.items[i];
     Expr e = gen->exprs.items[jmp.expr_pos];
-    assert(e.kind == EK_JMP || e.kind == EK_JNZ || e.kind == EK_JZ);
+    assert(e.kind == EK_JMP || e.kind == EK_JNZ || e.kind == EK_JZ || e.kind == EK_CALL);
     const char *name = e.args.items[0].as.str;
     bool found = false;
     for (size_t j = 0; j < gen->labels.count; ++j) {

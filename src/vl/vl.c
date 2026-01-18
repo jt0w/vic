@@ -102,12 +102,18 @@ Result vm_next(VM *vm) {
     vm->pc = inst.operand.as_u64;
     break;
   case OP_JNZ:
+    if (vm->stack.count < 1)
+      return RESULT_ERROR_STACK_UNDERFLOW;
     if (vm->stack.items[vm->stack.count - 1].as_u64 != 0)
       vm->pc = inst.operand.as_u64;
+    vm->stack.count--;
     break;
   case OP_JZ:
+    if (vm->stack.count < 1)
+      return RESULT_ERROR_STACK_UNDERFLOW;
     if (vm->stack.items[vm->stack.count - 1].as_u64 == 0)
       vm->pc = inst.operand.as_u64;
+    vm->stack.count--;
     break;
   case OP_ALLOC:
     if (vm->memory_pos >= VM_MEMORY_CAP)
@@ -130,6 +136,12 @@ Result vm_next(VM *vm) {
 
      vm->stack.count -= 2;
     break;
+  case OP_RET:
+    if (vm->stack.count < 1)
+      return RESULT_ERROR_STACK_UNDERFLOW;
+    vm->pc = vm->stack.items[vm->stack.count - 1].as_u64;
+    vm->stack.count--;
+    break;
   default:
     return RESULT_ERROR_ILLEGAL_INST;
   }
@@ -137,8 +149,6 @@ Result vm_next(VM *vm) {
 }
 
 int main(int argc, char *argv[]) {
-  (void)argc;
-  (void)argv;
   VM vm = {0};
   const char *prog = shift(argv, argc);
 
