@@ -64,7 +64,9 @@ typedef struct {
   Word *items;
 } Stack;
 
+#ifndef VM_MEMORY_CAP
 #define VM_MEMORY_CAP 1024
+#endif
 
 typedef struct {
   Program program;
