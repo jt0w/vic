@@ -20,6 +20,7 @@ typedef enum {
   EK_JNZ,
   EK_ALLOC,
   EK_WRITE,
+  EK_READ,
   EK_CALL,
   EK_RET,
   EK_INT,

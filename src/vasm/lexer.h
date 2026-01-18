@@ -40,6 +40,7 @@ typedef enum {
   TK_JNZ,
   TK_ALLOC,
   TK_WRITE,
+  TK_READ,
   TK_CALL,
   TK_RET,
 

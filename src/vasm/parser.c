@@ -172,6 +172,12 @@ Expr parse_expr(Parser *parser) {
     da_push(&expr.args, par_expect(parser, TK_INT_LIT, TK_LIT, END));
     break;
   }
+  case TK_READ: {
+    par_consume(parser);
+    expr.kind = EK_READ;
+    da_push(&expr.args, par_expect(parser, TK_INT_LIT, TK_LIT, END));
+    break;
+  }
   case TK_CALL: {
     par_consume(parser);
     expr.kind = EK_CALL;

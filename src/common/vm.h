@@ -32,6 +32,7 @@ typedef enum {
 
   OP_ALLOC,
   OP_WRITE,
+  OP_READ,
 
   OP_RET,
   OPCODE_COUNT,
@@ -57,6 +58,7 @@ typedef struct {
 #define INST_JZ(x)    ((Inst){.opcode = OP_JZ,     .operand = (x)})
 #define INST_ALLOC(x) ((Inst){.opcode = OP_ALLOC, .operand = (x)})
 #define INST_WRITE(x) ((Inst){.opcode = OP_WRITE, .operand = (x)})
+#define INST_READ(x)  ((Inst){.opcode = OP_READ,  .operand = (x)})
 #define INST_RET      ((Inst){.opcode = OP_RET                  })
 
 typedef struct {
@@ -88,7 +90,7 @@ typedef struct {
 
 typedef enum {
   TYPE_INT,
-  TYPE_MEM_ADRESS,
+  TYPE_MEM_ADDRESS,
 } Type;
 
 typedef enum {
