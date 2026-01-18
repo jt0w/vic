@@ -2,6 +2,7 @@
 #define _VM_H
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 typedef union {
   uint64_t as_u64;
@@ -32,6 +33,7 @@ typedef enum {
   OP_WRITE,
 
   OP_RET,
+  OPCODE_COUNT,
 } OpCode;
 
 typedef struct {
@@ -80,4 +82,36 @@ typedef struct {
   uint8_t memory[VM_MEMORY_CAP];
   size_t memory_pos;
 } VM;
+
+
+typedef enum {
+  TYPE_INT,
+  TYPE_MEM_ADRESS,
+} Type;
+
+typedef enum {
+  RESULT_OK,
+  RESULT_ERROR_STACK_OVERFLOW,
+  RESULT_ERROR_STACK_UNDERFLOW,
+  RESULT_ERROR_ILLEGAL_INST,
+  RESULT_ERROR_ILLEGAL_INST_ACCESS,
+  RESULT_ERROR_MEMORY_OVERFLOW,
+  RESULT_ERROR_ILLEGAL_MEMORY_ACCESS,
+} Result;
+
+typedef Result (*ExecuteFun)(VM*, Inst);
+
+#define INPUTS_CAP 2
+#define OUTPUTS_CAP 1
+
+typedef struct {
+  OpCode code;
+  const char *name;
+  bool has_operand;
+  Type inputs[INPUTS_CAP];
+  Type outputs[OUTPUTS_CAP];
+  ExecuteFun exe;
+} Instruction_Mapping;
+
+extern const Instruction_Mapping INST_MAP[OPCODE_COUNT];
 #endif // _VM_H

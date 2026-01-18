@@ -64,11 +64,11 @@ const Tool EXAMPLES[] = {
 
 int build_tool(Tool tool) {
   Cmd cmd = {0};
-  cmd_push(&cmd, "gcc", "-std="c_std, "-I./src/common");
+  cmd_push(&cmd, "gcc", "-std="c_std, "-I./src/common", "./src/common/vm.c");
   cmd_push(&cmd, "-Wall","-Wextra","-Wswitch-enum", "-pedantic", "-ggdb");
   if (MODE == MODE_DEBUG) cmd_push(&cmd, "-DDEBUG_MODE");
-  cmd_push(&cmd, "-o", tool.out);
   cmd_push(&cmd, tool.src);
+  cmd_push(&cmd, "-o", tool.out);
   return cmd_exec(&cmd);
 }
 

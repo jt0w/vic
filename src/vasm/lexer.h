@@ -44,12 +44,12 @@ typedef enum {
   TK_ALLOC,
   TK_WRITE,
 
+  TK_CALL,
+  TK_RET,
+
   TK_COLON,
   TK_SEMICOLON,
   TK_PERCENT,
-
-  TK_CALL,
-  TK_RET,
 } TokenKind;
 
 typedef struct {

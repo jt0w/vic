@@ -1,3 +1,4 @@
+%def N 10
 jmp main
 
 funny:
@@ -25,5 +26,5 @@ loop:
     ret
 
 main:
-    push 1
+    push N
     call repeat
