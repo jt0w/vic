@@ -1,0 +1,29 @@
+jmp main
+
+funny:
+    alloc 1
+    push 69
+    write 1
+    ret
+
+; args: N - amount of repeats
+repeat:
+    push 0 ; counter
+loop:
+    call funny
+
+    ; inc counter
+    push 1
+    add
+
+    dup 0
+    dup 3
+    eq
+
+    jz loop
+    pop
+    ret
+
+main:
+    push 1
+    call repeat

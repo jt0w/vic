@@ -164,6 +164,17 @@ Expr parse_expr(Parser *parser) {
     da_push(&expr.args, par_expect(parser, TK_INT_LIT, TK_LIT, END));
     break;
   }
+  case TK_CALL: {
+    par_consume(parser);
+    expr.kind = EK_CALL;
+    da_push(&expr.args, par_expect(parser, TK_INT_LIT, TK_LIT, END));
+    break;
+  }
+  case TK_RET: {
+    par_consume(parser);
+    expr.kind = EK_RET;
+    break;
+  }
   case TK_PERCENT: {
     par_consume(parser);
     Token t = par_expect(parser, TK_LIT, END);
