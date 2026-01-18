@@ -7,9 +7,8 @@
 #include "lexer.h"
 #include "parser.h"
 
-#include <vm.h>
 #include <debug.h>
-
+#include <vm.h>
 
 #define VERSION "0.0.1"
 
@@ -26,14 +25,17 @@ int main(int argc, char *argv[]) {
   }
 
   StringBuilder sb = {0};
-  read_file((char*)input_file.as.str, &sb);
-  Lexer lexer = {.input = sb.items, .cpos = (Position){1, 1}, .file = input_file.as.str};
+  read_file((char *)input_file.as.str, &sb);
+  Lexer lexer = {
+      .input = sb.items, .cpos = (Position){1, 1}, .file = input_file.as.str};
   Tokens tokens = {0};
-  while (lexer.pos < sb.count) {
-    da_push(&tokens, next_token(&lexer));
+  Token t = next_token(&lexer);
+  while (t.kind != TK_EOF) {
 #ifdef DEBUG_MODE
-   println("%s", print_token(input_file.as.str, tokens.items [tokens.count - 1]));
+    println("%s", print_token(input_file.as.str, t));
 #endif
+    da_push(&tokens, t);
+    t = next_token(&lexer);
   }
 
   Parser parser = {
