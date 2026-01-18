@@ -9,6 +9,7 @@ typedef enum {
   EK_PUSH,
   EK_POP,
   EK_DUP,
+  EK_SWAP,
   EK_ADD,
   EK_SUB,
   EK_MULT,

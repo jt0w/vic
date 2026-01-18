@@ -73,6 +73,13 @@ Program gen_generate(Gen *gen) {
       push(INST_DUP(arg.as.num));
       break;
     }
+    case EK_SWAP: {
+      assert(gen->current.args.count == 1);
+      Token arg = gen->current.args.items[0];
+      assert(arg.kind == TK_INT_LIT);
+      push(INST_SWAP(arg.as.num));
+      break;
+    }
     case EK_ADD: {
       push(INST_ADD);
       break;
