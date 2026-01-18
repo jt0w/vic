@@ -1,0 +1,36 @@
+; counter address in memory
+%def Pcounter 0
+
+pre:
+    push Pcounter
+    push 0
+    write 1
+    jmp main
+
+inc:
+    push Pcounter
+    read 1
+    push 1
+    add
+    push Pcounter
+    swap 1
+    write 1
+    ret
+
+repeat:
+    push 0 ; counter
+loop:
+    call inc
+    ; inc counter
+    push 1
+    add
+    dup 0
+    dup 3
+    eq
+    jz loop
+    pop
+    ret
+
+main:
+    push 3
+    call repeat

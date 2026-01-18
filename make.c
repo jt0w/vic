@@ -61,9 +61,9 @@ const Tool EXAMPLES[] = {
     .out = example_dir "mem.vb",
   },
   {
-    .name = "repeat",
-    .src = example_dir "repeat.vasm",
-    .out = example_dir "repeat.vb",
+    .name = "inc",
+    .src = example_dir "inc.vasm",
+    .out = example_dir "inc.vb",
   },
 };
 

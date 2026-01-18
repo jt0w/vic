@@ -21,7 +21,8 @@ TK_Map TK_MAP[] = {
     {TK_PERCENT, "TK_PERCENT"},
     {TK_ALLOC, "TK_ALLOC"},
     {TK_WRITE, "TK_WRITE"},
-    {TK_WRITE, "TK_CALL"},
+    {TK_READ, "TK_READ"},
+    {TK_CALL, "TK_CALL"},
     {TK_RET, "TK_RET"},
     {TK_SWAP, "TK_SWAP"},
 };
@@ -32,7 +33,7 @@ TK_Map KeyWordMap[] = {
     {TK_EQ, "eq"},       {TK_JMP, "jmp"},     {TK_NOP, "nop"},
     {TK_JNZ, "jnz"},     {TK_JZ, "jz"},       {TK_DUP, "dup"},
     {TK_WRITE, "write"}, {TK_ALLOC, "alloc"}, {TK_CALL, "call"},
-    {TK_RET, "ret"},     {TK_SWAP, "swap"}};
+    {TK_RET, "ret"},     {TK_SWAP, "swap"},   {TK_READ, "read"}};
 
 char *token_name(Token t) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {

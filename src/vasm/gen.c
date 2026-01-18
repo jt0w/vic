@@ -165,6 +165,15 @@ Program gen_generate(Gen *gen) {
       }
       break;
     }
+    case EK_READ: {
+      Token arg = gen->current.args.items[0];
+      if (arg.kind == TK_INT_LIT) {
+        push(INST_READ(arg.as.num));
+      } else if (gen->current.args.items[0].kind == TK_LIT) {
+        push(INST_READ(find_var_by_name(gen, arg.as.str).value));
+      }
+      break;
+    }
     case EK_CALL: {
       push(INST_PUSH(WORD_U64(p.count+1)));
       Token arg = gen->current.args.items[0];

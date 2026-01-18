@@ -143,6 +143,19 @@ Result vm_write(VM *vm, Inst inst) {
   return RESULT_OK;
 }
 
+Result vm_read(VM *vm, Inst inst) {
+  if (inst.operand.as_u64 > VM_MEMORY_CAP)
+    return RESULT_ERROR_ILLEGAL_MEMORY_ACCESS;
+  if (vm->stack.count < 1)
+    return RESULT_ERROR_STACK_UNDERFLOW;
+  uint64_t value = 0;
+  uint64_t count = inst.operand.as_u64;
+  memcpy(&value, &vm->memory[vm->stack.items[vm->stack.count - 0].as_u64], count);
+  da_push(&vm->stack, WORD_U64(value));
+  vm->stack.count--;
+  return RESULT_OK;
+}
+
 Result vm_ret(VM *vm, Inst inst) {
   (void)inst;
   if (vm->stack.count < 1)
