@@ -42,6 +42,11 @@ const Tool TOOLS[] = {
       .src = src_dir "devasm/devasm.c ",
       .out = build_dir "devasm",
     },
+    {
+      .name = "vam",
+      .src = src_dir "vam/vam.c ",
+      .out = build_dir "vam",
+    },
 };
 
 const Tool EXAMPLES[] = {

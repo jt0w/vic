@@ -135,7 +135,7 @@ const Instruction_Mapping INST_MAP[OPCODE_COUNT] = {
       .code = OP_RET,
       .name = "ret",
       .has_operand = false,
-      .inputs = {},
+      .inputs = {TYPE_INST_POS},
       .outputs = {},
       .exe = vm_ret,
     },

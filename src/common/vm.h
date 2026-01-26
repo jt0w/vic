@@ -89,7 +89,9 @@ typedef struct {
 
 
 typedef enum {
+  TYPE_NOTHING = 0,
   TYPE_INT,
+  TYPE_INST_POS,
   TYPE_MEM_ADDRESS,
 } Type;
 
