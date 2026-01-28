@@ -49,6 +49,7 @@ typedef enum {
   TK_COLON,
   TK_SEMICOLON,
   TK_PERCENT,
+  TK_CHAR,
 
   TK_EOF,
 } TokenKind;
@@ -66,6 +67,7 @@ typedef struct {
   Span span;
   TokenKind kind;
   union {
+    char chr;
     const char *str;
     Word num;
   } as;

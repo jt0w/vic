@@ -18,27 +18,27 @@ native write
 ret
 
 main:
-push 104
+push 'h'
 call print
-push 101
+push 'e'
 call print
-push 108
+push 'l'
 call print
-push 108
+push 'l'
 call print
-push 111
+push 'o'
 call print
-push 32
+push ' '
 call print
-push 119
+push 'w'
 call print
-push 111
+push 'o'
 call print
-push 114
+push 'r'
 call print
-push 108
+push 'l'
 call print
-push 100
+push 'd'
 call print
-push 10
+push '\n'
 call print

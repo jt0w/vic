@@ -27,6 +27,8 @@ TK_Map TK_MAP[] = {
     {TK_NATIVE, "TK_NATIVE"},
     {TK_DEF, "TK_DEF"},
     {TK_SWAP, "TK_SWAP"},
+    {TK_CHAR, "TK_CHAR"},
+
 
     {TK_EOF, "TK_EOF"},
 };
@@ -133,6 +135,70 @@ Token next_token(Lexer *lexer) {
   case '%':
     lex_consume(lexer);
     return_and_set_span(TK_PERCENT);
+  case '\'':
+    lex_consume(lexer);
+    da_push(&sb, '\'');
+    if(lexer->current == '\\') {
+      da_push(&sb, '\\');
+      lex_consume(lexer);
+      switch (lexer->current) {
+      case 'n':
+        t.as.chr = '\n';
+        break;
+      case 't':
+        t.as.chr = '\t';
+        break;
+      case 'v':
+        t.as.chr = '\v';
+        break;
+      case 'r':
+        t.as.chr = '\r';
+        break;
+      case 'f':
+        t.as.chr = '\f';
+        break;
+      case 'b':
+        t.as.chr = '\b';
+        break;
+      case 'a':
+        t.as.chr = '\a';
+        break;
+      case '\\':
+        t.as.chr = '\\';
+        break;
+      case '"':
+        t.as.chr = '"';
+        break;
+      case '\'':
+        t.as.chr = '\'';
+        break;
+      case '?':
+        t.as.chr = '\?';
+        break;
+      default:
+        fprintln(stderr, "%s:%zu:%zu: error: unknown escape sequence `\\%c`",
+            lexer->file, lexer->cpos.row, lexer->cpos.col, lexer->current);
+        exit(1);
+      }
+      lex_consume(lexer);
+    } else {
+      t.as.chr = lexer->current;
+      if (t.as.chr == '\'') {
+        fprintln(stderr, "%s:%zu:%zu: errror: empty string literal",
+            lexer->file, lexer->cpos.row, lexer->cpos.col);
+        exit(1);
+      }
+      da_push(&sb, lexer->current);
+      lex_consume(lexer);
+    }
+    if (lexer->current != '\'') {
+      fprintln(stderr, "%s:%zu:%zu: error: unterminated string literal",
+          lexer->file, lexer->cpos.row, lexer->cpos.col);
+      exit(1);
+    }
+    lex_consume(lexer);
+    da_push(&sb, '\'');
+    return_and_set_span(TK_CHAR);
   }
   lex_consume(lexer);
   return_and_set_span(TK_ERR);

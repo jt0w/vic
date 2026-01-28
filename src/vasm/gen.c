@@ -69,7 +69,7 @@ Program gen_generate(Gen *gen) {
     case EK_NATIVE: {
       Token name = gen->current.args.items[0];
       size_t id = {find_native_id_by_name(gen, name.span.literal)};
-      da_push(&p, ((Inst){.opcode = OP_NATIVE, .operand = id}));
+      da_push(&p, ((Inst){.opcode = OP_NATIVE, .operand = WORD_U64(id)}));
       break;
     }
     case EK_PUSH: {
@@ -79,7 +79,9 @@ Program gen_generate(Gen *gen) {
         push(INST_PUSH(arg.as.num));
       } else if (arg.kind == TK_LIT) {
         push(INST_PUSH(find_var_by_name(gen, arg.as.str).value));
-      } else {
+      } else if (arg.kind == TK_CHAR) {
+        push(INST_PUSH(WORD_U64((int)arg.as.chr)));
+      }else {
         assert(!"invalid push operand");
       }
       break;
