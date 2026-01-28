@@ -16,7 +16,6 @@ typedef enum {
 
 static CompMode MODE = {0};
 
-
 typedef struct {
   char *name;
   char *out;
@@ -69,6 +68,11 @@ const Tool EXAMPLES[] = {
     .name = "inc",
     .src = example_dir "inc.vasm",
     .out = example_dir "inc.vb",
+  },
+  {
+    .name = "hello_world",
+    .src = example_dir "hello_world.vasm",
+    .out = example_dir "hello_world.vb",
   },
 };
 

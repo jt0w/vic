@@ -23,10 +23,12 @@ typedef enum {
   EK_READ,
   EK_CALL,
   EK_RET,
+  EK_NATIVE,
   EK_INT,
   EK_LIT,
   EK_LABEL_DEF,
   EK_VAR_DEF,
+  EK_NATIVE_DEF,
 } ExprKind;
 
 typedef struct {

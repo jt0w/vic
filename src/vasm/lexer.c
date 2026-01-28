@@ -24,18 +24,22 @@ TK_Map TK_MAP[] = {
     {TK_READ, "TK_READ"},
     {TK_CALL, "TK_CALL"},
     {TK_RET, "TK_RET"},
+    {TK_NATIVE, "TK_NATIVE"},
+    {TK_DEF, "TK_DEF"},
     {TK_SWAP, "TK_SWAP"},
 
     {TK_EOF, "TK_EOF"},
 };
 
 TK_Map KeyWordMap[] = {
-    {TK_PUSH, "push"},   {TK_POP, "pop"},     {TK_ADD, "add"},
-    {TK_SUB, "sub"},     {TK_MULT, "mult"},   {TK_DIV, "div"},
-    {TK_EQ, "eq"},       {TK_JMP, "jmp"},     {TK_NOP, "nop"},
-    {TK_JNZ, "jnz"},     {TK_JZ, "jz"},       {TK_DUP, "dup"},
-    {TK_WRITE, "write"}, {TK_ALLOC, "alloc"}, {TK_CALL, "call"},
-    {TK_RET, "ret"},     {TK_SWAP, "swap"},   {TK_READ, "read"}};
+    {TK_PUSH, "push"},     {TK_POP, "pop"},     {TK_ADD, "add"},
+    {TK_SUB, "sub"},       {TK_MULT, "mult"},   {TK_DIV, "div"},
+    {TK_EQ, "eq"},         {TK_JMP, "jmp"},     {TK_NOP, "nop"},
+    {TK_JNZ, "jnz"},       {TK_JZ, "jz"},       {TK_DUP, "dup"},
+    {TK_WRITE, "write"},   {TK_ALLOC, "alloc"}, {TK_CALL, "call"},
+    {TK_RET, "ret"},       {TK_SWAP, "swap"},   {TK_READ, "read"},
+    {TK_NATIVE, "native"}, {TK_DEF, "def"},
+};
 
 char *token_name(Token t) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {

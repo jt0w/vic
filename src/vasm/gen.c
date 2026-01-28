@@ -19,6 +19,17 @@ Var find_var_by_name(Gen *gen, const char *name) {
   exit(1);
 }
 
+size_t find_native_id_by_name(Gen *gen, const char *name) {
+  for (size_t i = 0; i < gen->natives.count; ++i) {
+    if (strcmp(name, gen->natives.items[i].items) == 0) {
+      return i;
+    }
+  }
+
+  fprintln(stderr, "error: Native `%s` not found", name);
+  exit(1);
+}
+
 Program gen_generate(Gen *gen) {
   Program p = {0};
   while (gen->pos <= gen->exprs.count) {
@@ -48,6 +59,17 @@ Program gen_generate(Gen *gen) {
         da_push(&gen->vars,
                 ((Var){.name = name.as.str, .value = value.as.num}));
       }
+      break;
+    }
+    case EK_NATIVE_DEF: {
+      Token name = gen->current.args.items[0];
+      da_push(&gen->natives, sb_from_string(name.span.literal));
+      break;
+    }
+    case EK_NATIVE: {
+      Token name = gen->current.args.items[0];
+      size_t id = {find_native_id_by_name(gen, name.span.literal)};
+      da_push(&p, ((Inst){.opcode = OP_NATIVE, .operand = id}));
       break;
     }
     case EK_PUSH: {

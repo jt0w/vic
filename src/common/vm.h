@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#define CHIMERA_STRIP_PREFIX
+#include <chimera.h>
+
 typedef union {
   uint64_t as_u64;
   void *as_pointer;
@@ -35,6 +38,7 @@ typedef enum {
   OP_READ,
 
   OP_RET,
+  OP_NATIVE,
   OPCODE_COUNT,
 } OpCode;
 
@@ -43,22 +47,23 @@ typedef struct {
   Word operand;
 } Inst;
 
-#define INST_NOP      ((Inst){.opcode = OP_NOP                   })
-#define INST_PUSH(x)  ((Inst){.opcode = OP_PUSH,   .operand = (x)})
-#define INST_POP      ((Inst){.opcode = OP_POP                   })
-#define INST_DUP(x)   ((Inst){.opcode = OP_DUP,    .operand = (x)})
-#define INST_SWAP(x)  ((Inst){.opcode = OP_SWAP,   .operand = (x)})
-#define INST_ADD      ((Inst){.opcode = OP_ADD                   })
-#define INST_SUB      ((Inst){.opcode = OP_SUB                   })
-#define INST_MULT     ((Inst){.opcode = OP_MULT                  })
-#define INST_DIV      ((Inst){.opcode = OP_DIV                   })
-#define INST_EQ       ((Inst){.opcode = OP_EQ                    })
-#define INST_JMP(x)   ((Inst){.opcode = OP_JMP,    .operand = (x)})
-#define INST_JNZ(x)   ((Inst){.opcode = OP_JNZ,    .operand = (x)})
-#define INST_JZ(x)    ((Inst){.opcode = OP_JZ,     .operand = (x)})
+#define INST_NOP      ((Inst){.opcode = OP_NOP                  })
+#define INST_PUSH(x)  ((Inst){.opcode = OP_PUSH,  .operand = (x)})
+#define INST_POP      ((Inst){.opcode = OP_POP                  })
+#define INST_DUP(x)   ((Inst){.opcode = OP_DUP,   .operand = (x)})
+#define INST_SWAP(x)  ((Inst){.opcode = OP_SWAP,  .operand = (x)})
+#define INST_ADD      ((Inst){.opcode = OP_ADD                  })
+#define INST_SUB      ((Inst){.opcode = OP_SUB                  })
+#define INST_MULT     ((Inst){.opcode = OP_MULT                 })
+#define INST_DIV      ((Inst){.opcode = OP_DIV                  })
+#define INST_EQ       ((Inst){.opcode = OP_EQ                   })
+#define INST_JMP(x)   ((Inst){.opcode = OP_JMP,   .operand = (x)})
+#define INST_JNZ(x)   ((Inst){.opcode = OP_JNZ,   .operand = (x)})
+#define INST_JZ(x)    ((Inst){.opcode = OP_JZ,    .operand = (x)})
 #define INST_ALLOC(x) ((Inst){.opcode = OP_ALLOC, .operand = (x)})
 #define INST_WRITE(x) ((Inst){.opcode = OP_WRITE, .operand = (x)})
 #define INST_READ(x)  ((Inst){.opcode = OP_READ,  .operand = (x)})
+#define INST_NATIVE(x)((Inst){.opcode = OP_NATIVE,.operand = (x)})
 #define INST_RET      ((Inst){.opcode = OP_RET                  })
 
 typedef struct {
@@ -73,28 +78,6 @@ typedef struct {
   Word *items;
 } Stack;
 
-#ifndef VM_MEMORY_CAP
-#define VM_MEMORY_CAP 1024
-#endif
-
-typedef struct {
-  Program program;
-  size_t pc;
-
-  Stack stack;
-  // TODO: make this grow
-  uint8_t memory[VM_MEMORY_CAP];
-  size_t memory_pos;
-} VM;
-
-
-typedef enum {
-  TYPE_NOTHING = 0,
-  TYPE_INT,
-  TYPE_INST_POS,
-  TYPE_MEM_ADDRESS,
-} Type;
-
 typedef enum {
   RESULT_OK,
   RESULT_ERROR_STACK_OVERFLOW,
@@ -103,7 +86,42 @@ typedef enum {
   RESULT_ERROR_ILLEGAL_INST_ACCESS,
   RESULT_ERROR_MEMORY_OVERFLOW,
   RESULT_ERROR_ILLEGAL_MEMORY_ACCESS,
+  RESULT_ERROR_ILLEGAL_NATIVE,
 } Result;
+const char *result_to_str(Result r);
+
+#ifndef VM_MEMORY_CAP
+#define VM_MEMORY_CAP 1024
+#endif
+
+typedef struct VM VM;
+
+typedef Result (*VM_Internal)(VM* vm);
+
+typedef struct {
+  VM_Internal *items;
+  size_t count;
+  size_t cap;
+} VM_natives;
+
+struct VM {
+  VM_natives natives;
+
+  Program program;
+  size_t pc;
+
+  Stack stack;
+  // TODO: make this grow
+  uint8_t memory[VM_MEMORY_CAP];
+  size_t memory_pos;
+};
+
+typedef enum {
+  TYPE_NOTHING = 0,
+  TYPE_INT,
+  TYPE_INST_POS,
+  TYPE_MEM_ADDRESS,
+} Type;
 
 typedef Result (*ExecuteFun)(VM*, Inst);
 
@@ -120,4 +138,18 @@ typedef struct {
 } Instruction_Mapping;
 
 extern const Instruction_Mapping INST_MAP[OPCODE_COUNT];
+
+typedef struct {
+  StringBuilder *items;
+  size_t count;
+  size_t cap;
+} VM_NativeNames;
+
+typedef struct {
+  size_t natives_count;
+  VM_NativeNames natives;
+  Program program;
+} VM_BinFile;
+
+Result native_write(VM *vm);
 #endif // _VM_H

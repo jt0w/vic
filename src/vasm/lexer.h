@@ -43,6 +43,8 @@ typedef enum {
   TK_READ,
   TK_CALL,
   TK_RET,
+  TK_DEF,
+  TK_NATIVE,
 
   TK_COLON,
   TK_SEMICOLON,

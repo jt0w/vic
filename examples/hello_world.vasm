@@ -1,0 +1,44 @@
+%native write
+jmp main
+
+char:
+swap 1
+alloc 1
+dup 0
+swap 2
+write 1
+swap 1
+ret
+
+print:
+swap 1
+call char
+push 1
+native write
+ret
+
+main:
+push 104
+call print
+push 101
+call print
+push 108
+call print
+push 108
+call print
+push 111
+call print
+push 32
+call print
+push 119
+call print
+push 111
+call print
+push 114
+call print
+push 108
+call print
+push 100
+call print
+push 10
+call print

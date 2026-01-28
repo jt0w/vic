@@ -51,9 +51,15 @@ int main(int argc, char *argv[]) {
   Program program = gen_generate(&gen);
   FILE *bfile = fopen(output_file.as.str, "wb");
   assert(bfile != NULL);
-  fwrite(program.items, sizeof(Inst), program.count, bfile);
+  fwrite(&gen.natives.count, sizeof(gen.natives.count), 1, bfile);
+  for (size_t i = 0; i < gen.natives.count; ++i) {
+    fwrite(&gen.natives.items[i].count, sizeof(gen.natives.items[i].count), 1,
+           bfile);
+    fwrite(gen.natives.items[i].items, sizeof(*gen.natives.items[i].items),
+           gen.natives.items[i].count, bfile);
+  }
+  fwrite(program.items, sizeof(*program.items), program.count, bfile);
   fclose(bfile);
   println("Vism %s", VERSION);
-  println("%zu bytes", program.count * sizeof(Inst));
   return 0;
 }

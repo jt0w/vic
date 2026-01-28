@@ -1,4 +1,5 @@
 #include "parser.h"
+#include <debug.h>
 
 Token par_consume(Parser *parser) {
   parser->current = parser->tokens.items[parser->pos++];
@@ -189,17 +190,32 @@ Expr parse_expr(Parser *parser) {
     expr.kind = EK_RET;
     break;
   }
-  case TK_PERCENT: {
+  case TK_NATIVE: {
     par_consume(parser);
-    Token t = par_expect(parser, TK_LIT, END);
-    if (strcmp(t.as.str, "def") == 0) {
+    expr.kind = EK_NATIVE;
+    Token name = parser->current;
+    par_consume(parser);
+    da_push(&expr.args, name);
+    break;
+  }
+  case TK_PERCENT: {
+    breakpoint();
+    par_consume(parser);
+    if (parser->current.kind == TK_DEF) {
+      par_consume(parser);
       expr.kind = EK_VAR_DEF;
       da_push(&expr.args, par_expect(parser, TK_LIT, END));
       da_push(&expr.args, par_expect(parser, TK_INT_LIT, END));
+    } else if (parser->current.kind == TK_NATIVE) {
+      par_consume(parser);
+      expr.kind = EK_NATIVE_DEF;
+      Token name = parser->current;
+      par_consume(parser);
+      da_push(&expr.args, name);
     } else {
       fprintln(stderr,
-          "%s:%zu:%zu: error: Unexpected literal: `%s`",
-          parser->file, t.span.pos.row, t.span.pos.col, t.span.literal);
+          "%s:%zu:%zu: error: Unexpected token: `%s`",
+          parser->file, parser->current.span.pos.row, parser->current.span.pos.col, parser->current.span.literal);
       exit(1);
     }
     break;
@@ -218,6 +234,13 @@ Expr parse_expr(Parser *parser) {
             parser->file, parser->current.span.pos.row,
             parser->current.span.pos.col);
     exit(1);
+  }
+  case TK_DEF: {
+    fprintln(stderr,
+            "%s:%zu:%zu: error: unexpected keyword `def`",
+            parser->file, parser->current.span.pos.row,
+            parser->current.span.pos.col);
+    abort();
   }
   case TK_EOF: {
 

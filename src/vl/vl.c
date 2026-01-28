@@ -9,28 +9,6 @@
 #include <debug.h>
 #include <vm.h>
 
-
-const char *result_to_str(Result e) {
-  switch (e) {
-  case RESULT_OK:
-    return "OK";
-  case RESULT_ERROR_STACK_OVERFLOW:
-    return "ERROR_STACK_OVERFLOW";
-  case RESULT_ERROR_STACK_UNDERFLOW:
-    return "ERROR_STACK_UNDERFLOW";
-  case RESULT_ERROR_ILLEGAL_INST:
-    return "ERROR_ILLEGAL_INST";
-  case RESULT_ERROR_ILLEGAL_INST_ACCESS:
-    return "ERROR_ILLEGAL_INST_ACCESS";
-  case RESULT_ERROR_MEMORY_OVERFLOW:
-    return "RESULT_ERROR_MEMORY_OVERFLOW";
-  case RESULT_ERROR_ILLEGAL_MEMORY_ACCESS:
-    return "RESULT_ERROR_ILLEGAL_MEMORY_ACCESS";
-  default:
-    assert(0 && "UNREACHABLE: err_to_str");
-  }
-}
-
 Result vm_next(VM *vm) {
   if (vm->pc >= vm->program.count) {
     return RESULT_ERROR_ILLEGAL_INST_ACCESS;
@@ -56,6 +34,31 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  size_t natives_count;
+  if (fread(&natives_count, sizeof(natives_count), 1, file) != 1) {
+    log(ERROR, "natives_count couldn't be read from file");
+    return 1;
+  }
+  for (size_t i = 0; i < natives_count; ++i) {
+    size_t char_count;
+    if (fread(&char_count, sizeof(char_count), 1, file) != 1)  {
+      log(ERROR, "char_count couldn't be read from file");
+      return 1;
+    }
+    char *buf = malloc(char_count + 1);
+    if (fread(buf, sizeof(char), char_count, file) != char_count) {
+      log(ERROR, "name of native couldn't be read from file");
+      return 1;
+    }
+
+    if (strcmp(buf, "write") == 0) {
+      da_push(&vm.natives, native_write);
+    } else {
+      log(ERROR, "Unknown native: %s", buf);
+      return 1;
+    }
+  }
+
   Inst inst;
   while (fread(&inst, sizeof(Inst), 1, file) == 1) {
     da_push(&vm.program, inst);
@@ -69,15 +72,15 @@ int main(int argc, char *argv[]) {
       return 1;
     }
   }
-
-  println("Stack:");
-  for (size_t i = 0; i < vm.stack.count; ++i) {
-    println("  %ld", vm.stack.items[i]);
-  }
-
-  println("Memory:");
-  for (size_t i = 0; i < vm.memory_pos; ++i) {
-    println("  %u", vm.memory[i]);
-  }
+  //
+  // println("Stack:");
+  // for (size_t i = 0; i < vm.stack.count; ++i) {
+  //   println("  %ld", vm.stack.items[i]);
+  // }
+  //
+  // println("Memory:");
+  // for (size_t i = 0; i < vm.memory_pos; ++i) {
+  //   println("  %u", vm.memory[i]);
+  // }
   return 0;
 }
