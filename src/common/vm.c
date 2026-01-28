@@ -139,5 +139,47 @@ const Instruction_Mapping INST_MAP[OPCODE_COUNT] = {
       .outputs = {},
       .exe = vm_ret,
     },
+    [OP_NATIVE] = {
+      .code = OP_NATIVE,
+      .name = "native",
+      .has_operand = true,
+      .exe = vm_native,
+    },
 };
 
+Result native_write(VM *vm) {
+  if (vm->stack.count < 2)
+    return RESULT_ERROR_STACK_UNDERFLOW;
+
+  uint64_t mem = vm->stack.items[vm->stack.count - 2].as_u64;
+  uint64_t count = vm->stack.items[vm->stack.count - 1].as_u64;
+
+  fwrite(&vm->memory[mem], sizeof(vm->memory[mem]), count, stdout);
+
+  vm->stack.count -= 2;
+
+  return RESULT_OK;
+}
+
+const char *result_to_str(Result r) {
+  switch (r) {
+  case RESULT_OK:
+    return "OK";
+  case RESULT_ERROR_STACK_OVERFLOW:
+    return "ERROR_STACK_OVERFLOW";
+  case RESULT_ERROR_STACK_UNDERFLOW:
+    return "ERROR_STACK_UNDERFLOW";
+  case RESULT_ERROR_ILLEGAL_INST:
+    return "ERROR_ILLEGAL_INST";
+  case RESULT_ERROR_ILLEGAL_INST_ACCESS:
+    return "ERROR_ILLEGAL_INST_ACCESS";
+  case RESULT_ERROR_MEMORY_OVERFLOW:
+    return "RESULT_ERROR_MEMORY_OVERFLOW";
+  case RESULT_ERROR_ILLEGAL_MEMORY_ACCESS:
+    return "RESULT_ERROR_ILLEGAL_MEMORY_ACCESS";
+  case RESULT_ERROR_ILLEGAL_NATIVE:
+    return "RESULT_ERROR_ILLEGAL_NATIVE";
+  default:
+    assert(0 && "UNREACHABLE: result_to_str");
+  }
+}

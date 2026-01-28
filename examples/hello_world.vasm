@@ -1,0 +1,44 @@
+%native write
+jmp main
+
+char:
+swap 1
+alloc 1
+dup 0
+swap 2
+write 1
+swap 1
+ret
+
+print:
+swap 1
+call char
+push 1
+native write
+ret
+
+main:
+push 'h'
+call print
+push 'e'
+call print
+push 'l'
+call print
+push 'l'
+call print
+push 'o'
+call print
+push ' '
+call print
+push 'w'
+call print
+push 'o'
+call print
+push 'r'
+call print
+push 'l'
+call print
+push 'd'
+call print
+push '\n'
+call print

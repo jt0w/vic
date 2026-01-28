@@ -19,6 +19,17 @@ Var find_var_by_name(Gen *gen, const char *name) {
   exit(1);
 }
 
+size_t find_native_id_by_name(Gen *gen, const char *name) {
+  for (size_t i = 0; i < gen->natives.count; ++i) {
+    if (strcmp(name, gen->natives.items[i].items) == 0) {
+      return i;
+    }
+  }
+
+  fprintln(stderr, "error: Native `%s` not found", name);
+  exit(1);
+}
+
 Program gen_generate(Gen *gen) {
   Program p = {0};
   while (gen->pos <= gen->exprs.count) {
@@ -50,6 +61,17 @@ Program gen_generate(Gen *gen) {
       }
       break;
     }
+    case EK_NATIVE_DEF: {
+      Token name = gen->current.args.items[0];
+      da_push(&gen->natives, sb_from_string(name.span.literal));
+      break;
+    }
+    case EK_NATIVE: {
+      Token name = gen->current.args.items[0];
+      size_t id = {find_native_id_by_name(gen, name.span.literal)};
+      da_push(&p, ((Inst){.opcode = OP_NATIVE, .operand = WORD_U64(id)}));
+      break;
+    }
     case EK_PUSH: {
       assert(gen->current.args.count == 1);
       Token arg = gen->current.args.items[0];
@@ -57,7 +79,9 @@ Program gen_generate(Gen *gen) {
         push(INST_PUSH(arg.as.num));
       } else if (arg.kind == TK_LIT) {
         push(INST_PUSH(find_var_by_name(gen, arg.as.str).value));
-      } else {
+      } else if (arg.kind == TK_CHAR) {
+        push(INST_PUSH(WORD_U64((int)arg.as.chr)));
+      }else {
         assert(!"invalid push operand");
       }
       break;

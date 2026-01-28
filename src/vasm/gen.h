@@ -39,6 +39,7 @@ typedef struct {
   size_t pos;
   Exprs exprs;
   Expr current;
+  VM_NativeNames natives;
 
   Labels labels;
   UnresolvedJumps unresolved_jumps;

@@ -24,18 +24,24 @@ TK_Map TK_MAP[] = {
     {TK_READ, "TK_READ"},
     {TK_CALL, "TK_CALL"},
     {TK_RET, "TK_RET"},
+    {TK_NATIVE, "TK_NATIVE"},
+    {TK_DEF, "TK_DEF"},
     {TK_SWAP, "TK_SWAP"},
+    {TK_CHAR, "TK_CHAR"},
+
 
     {TK_EOF, "TK_EOF"},
 };
 
 TK_Map KeyWordMap[] = {
-    {TK_PUSH, "push"},   {TK_POP, "pop"},     {TK_ADD, "add"},
-    {TK_SUB, "sub"},     {TK_MULT, "mult"},   {TK_DIV, "div"},
-    {TK_EQ, "eq"},       {TK_JMP, "jmp"},     {TK_NOP, "nop"},
-    {TK_JNZ, "jnz"},     {TK_JZ, "jz"},       {TK_DUP, "dup"},
-    {TK_WRITE, "write"}, {TK_ALLOC, "alloc"}, {TK_CALL, "call"},
-    {TK_RET, "ret"},     {TK_SWAP, "swap"},   {TK_READ, "read"}};
+    {TK_PUSH, "push"},     {TK_POP, "pop"},     {TK_ADD, "add"},
+    {TK_SUB, "sub"},       {TK_MULT, "mult"},   {TK_DIV, "div"},
+    {TK_EQ, "eq"},         {TK_JMP, "jmp"},     {TK_NOP, "nop"},
+    {TK_JNZ, "jnz"},       {TK_JZ, "jz"},       {TK_DUP, "dup"},
+    {TK_WRITE, "write"},   {TK_ALLOC, "alloc"}, {TK_CALL, "call"},
+    {TK_RET, "ret"},       {TK_SWAP, "swap"},   {TK_READ, "read"},
+    {TK_NATIVE, "native"}, {TK_DEF, "def"},
+};
 
 char *token_name(Token t) {
   for (size_t i = 0; i < sizeof(TK_MAP) / sizeof(TK_MAP[0]); ++i) {
@@ -129,6 +135,70 @@ Token next_token(Lexer *lexer) {
   case '%':
     lex_consume(lexer);
     return_and_set_span(TK_PERCENT);
+  case '\'':
+    lex_consume(lexer);
+    da_push(&sb, '\'');
+    if(lexer->current == '\\') {
+      da_push(&sb, '\\');
+      lex_consume(lexer);
+      switch (lexer->current) {
+      case 'n':
+        t.as.chr = '\n';
+        break;
+      case 't':
+        t.as.chr = '\t';
+        break;
+      case 'v':
+        t.as.chr = '\v';
+        break;
+      case 'r':
+        t.as.chr = '\r';
+        break;
+      case 'f':
+        t.as.chr = '\f';
+        break;
+      case 'b':
+        t.as.chr = '\b';
+        break;
+      case 'a':
+        t.as.chr = '\a';
+        break;
+      case '\\':
+        t.as.chr = '\\';
+        break;
+      case '"':
+        t.as.chr = '"';
+        break;
+      case '\'':
+        t.as.chr = '\'';
+        break;
+      case '?':
+        t.as.chr = '\?';
+        break;
+      default:
+        fprintln(stderr, "%s:%zu:%zu: error: unknown escape sequence `\\%c`",
+            lexer->file, lexer->cpos.row, lexer->cpos.col, lexer->current);
+        exit(1);
+      }
+      lex_consume(lexer);
+    } else {
+      t.as.chr = lexer->current;
+      if (t.as.chr == '\'') {
+        fprintln(stderr, "%s:%zu:%zu: errror: empty string literal",
+            lexer->file, lexer->cpos.row, lexer->cpos.col);
+        exit(1);
+      }
+      da_push(&sb, lexer->current);
+      lex_consume(lexer);
+    }
+    if (lexer->current != '\'') {
+      fprintln(stderr, "%s:%zu:%zu: error: unterminated string literal",
+          lexer->file, lexer->cpos.row, lexer->cpos.col);
+      exit(1);
+    }
+    lex_consume(lexer);
+    da_push(&sb, '\'');
+    return_and_set_span(TK_CHAR);
   }
   lex_consume(lexer);
   return_and_set_span(TK_ERR);

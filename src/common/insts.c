@@ -1,8 +1,5 @@
 #include "vm.h"
 
-#define CHIMERA_STRIP_PREFIX
-#include <chimera.h>
-
 Result vm_nop(VM *vm, Inst inst) {
   (void)vm;
   (void)inst;
@@ -162,5 +159,15 @@ Result vm_ret(VM *vm, Inst inst) {
     return RESULT_ERROR_STACK_UNDERFLOW;
   vm->pc = vm->stack.items[vm->stack.count - 1].as_u64;
   vm->stack.count--;
+  return RESULT_OK;
+}
+
+Result vm_native(VM *vm, Inst inst) {
+  uint64_t id = inst.operand.as_u64;
+  if (id >= vm->natives.count)
+    return RESULT_ERROR_ILLEGAL_NATIVE;
+  Result err = vm->natives.items[id](vm);
+  if (err != RESULT_OK)
+    return err;
   return RESULT_OK;
 }
