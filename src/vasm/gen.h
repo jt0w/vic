@@ -36,6 +36,8 @@ typedef struct {
 } UnresolvedJumps;
 
 typedef struct {
+  const char *file;
+
   size_t pos;
   Exprs exprs;
   Expr current;
@@ -48,5 +50,5 @@ typedef struct {
 
 Var find_var_by_name(Gen *gen, const char *name);
 Expr gen_consume(Gen *gen);
-Program gen_generate(Gen *gen);
+void gen_generate(Gen *gen, Program *p);
 #endif /* end of include guard: GEN_H */

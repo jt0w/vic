@@ -21,6 +21,9 @@
             self'.packages.vasm
           ];
           buildInputs = with pkgs; [uncrustify];
+          shellHook = ''
+            export PATH=$PATH:$PWD/build/
+          '';
         };
 
         packages = {

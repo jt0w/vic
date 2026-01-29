@@ -28,6 +28,8 @@ TK_Map TK_MAP[] = {
     {TK_DEF, "TK_DEF"},
     {TK_SWAP, "TK_SWAP"},
     {TK_CHAR, "TK_CHAR"},
+    {TK_STRING, "TK_STRING"},
+    {TK_USE, "TK_USE"},
 
 
     {TK_EOF, "TK_EOF"},
@@ -40,7 +42,7 @@ TK_Map KeyWordMap[] = {
     {TK_JNZ, "jnz"},       {TK_JZ, "jz"},       {TK_DUP, "dup"},
     {TK_WRITE, "write"},   {TK_ALLOC, "alloc"}, {TK_CALL, "call"},
     {TK_RET, "ret"},       {TK_SWAP, "swap"},   {TK_READ, "read"},
-    {TK_NATIVE, "native"}, {TK_DEF, "def"},
+    {TK_NATIVE, "native"}, {TK_DEF, "def"}, {TK_USE, "use"},
 };
 
 char *token_name(Token t) {
@@ -122,19 +124,41 @@ Token next_token(Lexer *lexer) {
     return_and_set_span(TK_LIT);
   }
 
-  da_push(&sb, lexer->current);
   switch (lexer->current) {
   case '\0':
+    da_push(&sb, lexer->current);
     return_and_set_span(TK_EOF);
   case ':':
+    da_push(&sb, lexer->current);
     lex_consume(lexer);
     return_and_set_span(TK_COLON);
   case ';':
+    da_push(&sb, lexer->current);
     lex_consume(lexer);
     return_and_set_span(TK_SEMICOLON);
   case '%':
+    da_push(&sb, lexer->current);
     lex_consume(lexer);
     return_and_set_span(TK_PERCENT);
+  case '"':
+    lex_consume(lexer);
+    while (true) {
+      if (lexer->current == '"') break;
+      if (lexer->current == '\n') {
+        fprintln(stderr, "%s:%zu:%zu: error: line break in single line string literal",
+            lexer->file, lexer->cpos.row, lexer->cpos.col);
+        exit(1);
+      }
+      if (lexer->current == '\0') {
+        fprintln(stderr, "%s:%zu:%zu: error: unterminated string literal",
+            lexer->file, lexer->cpos.row, lexer->cpos.col);
+        exit(1);
+      }
+      da_push(&sb, lexer->current);
+      lex_consume(lexer);
+    }
+    lex_consume(lexer);
+    return_and_set_span(TK_STRING);
   case '\'':
     lex_consume(lexer);
     da_push(&sb, '\'');

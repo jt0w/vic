@@ -1,4 +1,6 @@
 #include "gen.h"
+#include "common.h"
+#include <debug.h>
 #include <inttypes.h>
 
 Expr gen_consume(Gen *gen) {
@@ -6,7 +8,7 @@ Expr gen_consume(Gen *gen) {
   return gen->current;
 }
 
-#define push(x) da_push(&p, (x))
+#define push(x) da_push(p, (x))
 
 Var find_var_by_name(Gen *gen, const char *name) {
   for (size_t i = 0; i < gen->vars.count; ++i) {
@@ -30,15 +32,31 @@ size_t find_native_id_by_name(Gen *gen, const char *name) {
   exit(1);
 }
 
-Program gen_generate(Gen *gen) {
-  Program p = {0};
+void gen_generate(Gen *gen, Program *p) {
   while (gen->pos <= gen->exprs.count) {
     if (gen->pos == 0)
       gen_consume(gen);
     switch (gen->current.kind) {
+    case EK_USE: {
+      char *file = gen->current.args.items[0].span.literal;
+      Gen gen2 = {0};
+      char *root = strdup(gen->file);
+      // https://stackoverflow.com/questions/11270127/string-handling-in-ansi-c
+      char *last_slash = strrchr(root, '/');
+      if (last_slash != NULL) {
+        *last_slash = '\0';
+      }
+      translate_file(temp_sprintf("%s/%s", root, file), &gen2, p);
+      da_push_mult(&gen->labels, gen2.labels.items, gen2.labels.count);
+      da_push_mult(&gen->natives, gen2.natives.items, gen2.natives.count);
+      da_free(gen2.unresolved_jumps);
+      da_free(gen2.natives);
+      da_free(gen2.vars);
+      break;
+    }
     case EK_LABEL_DEF: {
-      da_push(&gen->labels, ((Label) {
-                                .pos = {p.count},
+      da_push(&gen->labels, ((Label){
+                                .pos = {p->count},
                                 .name = gen->current.args.items[0].as.str,
                             }));
       break;
@@ -69,7 +87,7 @@ Program gen_generate(Gen *gen) {
     case EK_NATIVE: {
       Token name = gen->current.args.items[0];
       size_t id = {find_native_id_by_name(gen, name.span.literal)};
-      da_push(&p, ((Inst){.opcode = OP_NATIVE, .operand = WORD_U64(id)}));
+      da_push(p, ((Inst){.opcode = OP_NATIVE, .operand = WORD_U64(id)}));
       break;
     }
     case EK_PUSH: {
@@ -81,7 +99,7 @@ Program gen_generate(Gen *gen) {
         push(INST_PUSH(find_var_by_name(gen, arg.as.str).value));
       } else if (arg.kind == TK_CHAR) {
         push(INST_PUSH(WORD_U64((int)arg.as.chr)));
-      }else {
+      } else {
         assert(!"invalid push operand");
       }
       break;
@@ -130,7 +148,7 @@ Program gen_generate(Gen *gen) {
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
                                             .expr_pos = gen->pos - 1,
-                                            .program_pos = p.count,
+                                            .program_pos = p->count,
                                         }));
         push(INST_JMP(WORD_U64(0)));
       } else if (arg.kind == TK_INT_LIT) {
@@ -144,7 +162,7 @@ Program gen_generate(Gen *gen) {
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
                                             .expr_pos = gen->pos - 1,
-                                            .program_pos = p.count,
+                                            .program_pos = p->count,
                                         }));
         push(INST_JZ(WORD_U64(0)));
       } else if (arg.kind == TK_INT_LIT) {
@@ -159,7 +177,7 @@ Program gen_generate(Gen *gen) {
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
                                             .expr_pos = gen->pos - 1,
-                                            .program_pos = p.count,
+                                            .program_pos = p->count,
                                         }));
         push(INST_JNZ(WORD_U64(0)));
       } else if (arg.kind == TK_INT_LIT) {
@@ -199,12 +217,12 @@ Program gen_generate(Gen *gen) {
       break;
     }
     case EK_CALL: {
-      push(INST_PUSH(WORD_U64(p.count+1)));
+      push(INST_PUSH(WORD_U64(p->count + 1)));
       Token arg = gen->current.args.items[0];
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
                                             .expr_pos = gen->pos - 1,
-                                            .program_pos = p.count,
+                                            .program_pos = p->count,
                                         }));
         push(INST_JMP(WORD_U64(0)));
       } else if (arg.kind == TK_INT_LIT) {
@@ -233,12 +251,13 @@ Program gen_generate(Gen *gen) {
   for (size_t i = 0; i < gen->unresolved_jumps.count; ++i) {
     UnresolvedJump jmp = gen->unresolved_jumps.items[i];
     Expr e = gen->exprs.items[jmp.expr_pos];
-    assert(e.kind == EK_JMP || e.kind == EK_JNZ || e.kind == EK_JZ || e.kind == EK_CALL);
+    assert(e.kind == EK_JMP || e.kind == EK_JNZ || e.kind == EK_JZ ||
+           e.kind == EK_CALL);
     const char *name = e.args.items[0].as.str;
     bool found = false;
     for (size_t j = 0; j < gen->labels.count; ++j) {
       if (strcmp(name, gen->labels.items[j].name) == 0) {
-        p.items[jmp.program_pos].operand = gen->labels.items[j].pos;
+        p->items[jmp.program_pos].operand = gen->labels.items[j].pos;
         found = true;
       }
     }
@@ -247,5 +266,4 @@ Program gen_generate(Gen *gen) {
       exit(1);
     }
   }
-  return p;
 }

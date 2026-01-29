@@ -54,7 +54,7 @@ char *make_type_list(Type types[], size_t cap) {
   for (size_t i = 0; i < cap; ++i) {
     if (types[i] == TYPE_NOTHING)
       break;
-    if (i != 0 && i != cap - 1)
+    if (i != 0)
       da_push_buf(&sb, ", ");
     char *t = print_type(types[i]);
     da_push_buf(&sb, t);

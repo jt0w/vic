@@ -24,6 +24,7 @@ typedef enum {
   EK_CALL,
   EK_RET,
   EK_NATIVE,
+  EK_USE,
   EK_INT,
   EK_LIT,
   EK_LABEL_DEF,
