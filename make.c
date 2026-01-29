@@ -31,6 +31,7 @@ const Tool TOOLS[] = {
     {
       .name = "vasm",
       .src = src_dir "vasm/vasm.c "
+             src_dir "vasm/common.c "
              src_dir "vasm/lexer.c "
              src_dir "vasm/parser.c "
              src_dir "vasm/gen.c ",

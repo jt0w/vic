@@ -1,0 +1,17 @@
+%native write
+
+char:
+    swap 1
+    alloc 1
+    dup 0
+    swap 2
+    write 1
+    swap 1
+    ret
+
+print:
+    swap 1
+    call char
+    push 1
+    native write
+    ret

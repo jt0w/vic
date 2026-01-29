@@ -2,11 +2,11 @@
 #define CHIMERA_STRIP_PREFIX
 #include <chimera.h>
 
+#include <debug.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <debug.h>
 #include <vm.h>
 
 Result vm_next(VM *vm) {
@@ -15,6 +15,18 @@ Result vm_next(VM *vm) {
   }
   Inst inst = vm->program.items[vm->pc++];
   return INST_MAP[inst.opcode].exe(vm, inst);
+}
+
+void dump_vm(VM vm) {
+  println("Stack:");
+  for (size_t i = 0; i < vm.stack.count; ++i) {
+    println("  %ld", vm.stack.items[i]);
+  }
+
+  println("Memory:");
+  for (size_t i = 0; i < vm.memory_pos; ++i) {
+    println("  %u", vm.memory[i]);
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -41,7 +53,7 @@ int main(int argc, char *argv[]) {
   }
   for (size_t i = 0; i < natives_count; ++i) {
     size_t char_count;
-    if (fread(&char_count, sizeof(char_count), 1, file) != 1)  {
+    if (fread(&char_count, sizeof(char_count), 1, file) != 1) {
       log(ERROR, "char_count couldn't be read from file");
       return 1;
     }
@@ -67,20 +79,19 @@ int main(int argc, char *argv[]) {
   Result res;
   while (vm.pc < vm.program.count) {
     res = vm_next(&vm);
+#ifdef DEBUG_MODE
+    dump_vm(vm);
+    getchar();
+#endif
     if (res != RESULT_OK) {
       log(ERROR, "%s", result_to_str(res));
       return 1;
     }
   }
-  //
-  // println("Stack:");
-  // for (size_t i = 0; i < vm.stack.count; ++i) {
-  //   println("  %ld", vm.stack.items[i]);
-  // }
-  //
-  // println("Memory:");
-  // for (size_t i = 0; i < vm.memory_pos; ++i) {
-  //   println("  %u", vm.memory[i]);
-  // }
+
+#ifdef DEBUG_MODE
+  dump_vm(vm);
+#endif
+
   return 0;
 }

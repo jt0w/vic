@@ -199,7 +199,6 @@ Expr parse_expr(Parser *parser) {
     break;
   }
   case TK_PERCENT: {
-    breakpoint();
     par_consume(parser);
     if (parser->current.kind == TK_DEF) {
       par_consume(parser);
@@ -212,6 +211,10 @@ Expr parse_expr(Parser *parser) {
       Token name = parser->current;
       par_consume(parser);
       da_push(&expr.args, name);
+    } else if (parser->current.kind == TK_USE) {
+      par_consume(parser);
+      expr.kind = EK_USE;
+      da_push(&expr.args, par_expect(parser, TK_STRING, END));
     } else {
       fprintln(stderr,
           "%s:%zu:%zu: error: Unexpected token: `%s`",
@@ -235,14 +238,22 @@ Expr parse_expr(Parser *parser) {
             parser->current.span.pos.col);
     exit(1);
   }
+  case TK_USE:
   case TK_DEF: {
     fprintln(stderr,
-            "%s:%zu:%zu: error: unexpected keyword `def`",
+            "%s:%zu:%zu: error: unexpected token `%s`",
+            parser->file, parser->current.span.pos.row,
+            parser->current.span.pos.col, parser->current.span.literal);
+    exit(1);
+  }
+  case TK_CHAR: {
+    fprintln(stderr,
+            "%s:%zu:%zu: error: unexpected char literal",
             parser->file, parser->current.span.pos.row,
             parser->current.span.pos.col);
     exit(1);
   }
-  case TK_CHAR: {
+  case TK_STRING: {
     fprintln(stderr,
             "%s:%zu:%zu: error: unexpected string literal",
             parser->file, parser->current.span.pos.row,

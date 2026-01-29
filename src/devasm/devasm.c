@@ -18,6 +18,25 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  // TODO: natives with names
+  size_t natives_count;
+  if (fread(&natives_count, sizeof(natives_count), 1, file) != 1) {
+    log(ERROR, "natives_count couldn't be read from file");
+    return 1;
+  }
+  for (size_t i = 0; i < natives_count; ++i) {
+    size_t char_count;
+    if (fread(&char_count, sizeof(char_count), 1, file) != 1)  {
+      log(ERROR, "char_count couldn't be read from file");
+      return 1;
+    }
+    char *buf = malloc(char_count + 1);
+    if (fread(buf, sizeof(char), char_count, file) != char_count) {
+      log(ERROR, "name of native couldn't be read from file");
+      return 1;
+    }
+  }
+
   Inst inst;
   while (fread(&inst, sizeof(Inst), 1, file) == 1) {
     Instruction_Mapping mapping = INST_MAP[inst.opcode];

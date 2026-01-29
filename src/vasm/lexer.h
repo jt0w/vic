@@ -50,6 +50,8 @@ typedef enum {
   TK_SEMICOLON,
   TK_PERCENT,
   TK_CHAR,
+  TK_STRING,
+  TK_USE,
 
   TK_EOF,
 } TokenKind;
