@@ -22,7 +22,7 @@
           ];
           buildInputs = with pkgs; [uncrustify];
           shellHook = ''
-            export PATH=$PATH:./build/
+            export PATH=$PATH:$PWD/build/
           '';
         };
 
