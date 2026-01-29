@@ -11,5 +11,5 @@ It comes with the vasm assembler.
 ```shell
 $ gcc -o make make.c
 $ ./make -build_examples
-$ ./build/vl examples/nice.vb
+$ ./build/vl examples/hello_world.vb
 ```
