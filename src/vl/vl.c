@@ -30,68 +30,76 @@ void dump_vm(VM vm) {
 }
 
 int main(int argc, char *argv[]) {
-  VM vm = {0};
+  int result = EXIT_SUCCESS;
   const char *prog = shift(argv, argc);
+  VM vm = {0};
+  FILE *file = NULL;
 
-  if (argc != 1) {
-    fprintln(stderr, "Usage: %s <file>", prog);
-    log(ERROR, "Did not provide any args");
-    return 1;
-  }
-
-  char *file_name = shift(argv, argc);
-  FILE *file = fopen(file_name, "rb");
-  if (file == NULL) {
-    log(ERROR, "File not found");
-    return 1;
-  }
-
-  size_t natives_count;
-  if (fread(&natives_count, sizeof(natives_count), 1, file) != 1) {
-    log(ERROR, "natives_count couldn't be read from file");
-    return 1;
-  }
-  for (size_t i = 0; i < natives_count; ++i) {
-    size_t char_count;
-    if (fread(&char_count, sizeof(char_count), 1, file) != 1) {
-      log(ERROR, "char_count couldn't be read from file");
-      return 1;
-    }
-    char *buf = malloc(char_count + 1);
-    if (fread(buf, sizeof(char), char_count, file) != char_count) {
-      log(ERROR, "name of native couldn't be read from file");
-      return 1;
+  {
+    if (argc != 1) {
+      fprintln(stderr, "Usage: %s <file>", prog);
+      log(ERROR, "Did not provide any args");
+      goto fail;
     }
 
-    if (strcmp(buf, "write") == 0) {
-      da_push(&vm.natives, native_write);
-    } else {
-      log(ERROR, "Unknown native: %s", buf);
-      return 1;
+    char *file_name = shift(argv, argc);
+    file = fopen(file_name, "rb");
+    if (file == NULL) {
+      log(ERROR, "File not found");
+      goto fail;
     }
-  }
 
-  Inst inst;
-  while (fread(&inst, sizeof(Inst), 1, file) == 1) {
-    da_push(&vm.program, inst);
-  }
+    size_t natives_count;
+    if (fread(&natives_count, sizeof(natives_count), 1, file) != 1) {
+      log(ERROR, "natives_count couldn't be read from file");
+      goto fail;
+    }
+    for (size_t i = 0; i < natives_count; ++i) {
+      size_t char_count;
+      if (fread(&char_count, sizeof(char_count), 1, file) != 1) {
+        log(ERROR, "char_count couldn't be read from file");
+        goto fail;
+      }
+      char *buf = malloc(char_count + 1);
+      if (fread(buf, sizeof(char), char_count, file) != char_count) {
+        log(ERROR, "name of native couldn't be read from file");
+        goto fail;
+      }
 
-  Result res;
-  while (vm.pc < vm.program.count) {
-    res = vm_next(&vm);
+      if (strcmp(buf, "write") == 0) {
+        da_push(&vm.natives, native_write);
+      } else {
+        log(ERROR, "Unknown native: %s", buf);
+        goto fail;
+      }
+    }
+
+    Inst inst;
+    while (fread(&inst, sizeof(Inst), 1, file) == 1) {
+      da_push(&vm.program, inst);
+    }
+
+    Result res;
+    while (vm.pc < vm.program.count) {
+      res = vm_next(&vm);
+#ifdef DEBUG_MODE
+      dump_vm(vm);
+      getchar();
+#endif
+      if (res != RESULT_OK) {
+        log(ERROR, "%s", result_to_str(res));
+        goto fail;
+      }
+    }
+
 #ifdef DEBUG_MODE
     dump_vm(vm);
-    getchar();
 #endif
-    if (res != RESULT_OK) {
-      log(ERROR, "%s", result_to_str(res));
-      return 1;
-    }
   }
-
-#ifdef DEBUG_MODE
-  dump_vm(vm);
-#endif
-
-  return 0;
+end:
+  if (file != NULL) fclose(file);
+  return result;
+fail:
+  result = EXIT_FAILURE;
+  goto end;
 }
