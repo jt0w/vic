@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  // TODO: natives with names
+  VM_NativeNames natives = {0};
   size_t natives_count;
   if (fread(&natives_count, sizeof(natives_count), 1, file) != 1) {
     log(ERROR, "natives_count couldn't be read from file");
@@ -35,13 +35,15 @@ int main(int argc, char **argv) {
       log(ERROR, "name of native couldn't be read from file");
       return 1;
     }
+    da_push(&natives, sb_from_string(buf));
   }
 
   Inst inst;
   while (fread(&inst, sizeof(Inst), 1, file) == 1) {
     Instruction_Mapping mapping = INST_MAP[inst.opcode];
     printf("%s", mapping.name);
-    if (mapping.has_operand) printf(" %"PRIu64, inst.operand.as_u64);
+    if (mapping.code == OP_NATIVE) printf(" %s", natives.items[inst.operand.as_u64].items);
+    else if (mapping.has_operand) printf(" %"PRIu64, inst.operand.as_u64);
     printf("\n");
   }
   return 0;
