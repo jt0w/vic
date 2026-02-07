@@ -78,23 +78,25 @@ char lex_consume(Lexer *lexer) {
   return lexer->current;
 }
 
-#define return_and_set_span(k)                                                 \
-  do {                                                                         \
-    t.kind = (k);                                                              \
-    da_push(&sb, '\0');                                                        \
-    t.span.literal = malloc(sb.count);                                         \
-    strcpy(t.span.literal, sb.items);                                          \
-    if ((k) == TK_LIT)                                                         \
-      t.as.str = t.span.literal;                                               \
-    t.span.pos = lexer->cpos;                                                  \
-    da_free(sb);                                                               \
-    return t;                                                                  \
+#define return_and_set_span(k)           \
+  do {                                   \
+    t->kind = (k);                       \
+    da_push(&sb, '\0');                  \
+    t->span.literal = malloc(sb.count);  \
+    strcpy(t->span.literal, sb.items);   \
+    if ((k) == TK_LIT)                   \
+      t->as.str = t->span.literal;       \
+    t->span.pos = lexer->cpos;           \
+    da_free(sb);                         \
+    goto end;                            \
   } while (0)
 
-Token next_token(Lexer *lexer) {
-  Token t = {
-      .span.pos = lexer->cpos,
-  };
+void free_token(Token t) {
+  free(t.span.literal);
+}
+
+bool next_token(Lexer *lexer, Token *t) {
+  bool result = true;
   if (lexer->pos == 0)
     lex_consume(lexer);
   StringBuilder sb = {0};
@@ -102,9 +104,10 @@ Token next_token(Lexer *lexer) {
     lex_consume(lexer);
   }
   if (isdigit(lexer->current)) {
+	t->as.num.as_u64 = 0;
     while (isdigit(lexer->current)) {
       da_push(&sb, lexer->current);
-      t.as.num.as_u64 = t.as.num.as_u64 * 10 + lexer->current - '0';
+      t->as.num.as_u64 = t->as.num.as_u64 * 10 + lexer->current - '0';
       lex_consume(lexer);
     }
     return_and_set_span(TK_INT_LIT);
@@ -147,12 +150,12 @@ Token next_token(Lexer *lexer) {
       if (lexer->current == '\n') {
         fprintln(stderr, "%s:%zu:%zu: error: line break in single line string literal",
             lexer->file, lexer->cpos.row, lexer->cpos.col);
-        exit(1);
+        goto fail;
       }
       if (lexer->current == '\0') {
         fprintln(stderr, "%s:%zu:%zu: error: unterminated string literal",
             lexer->file, lexer->cpos.row, lexer->cpos.col);
-        exit(1);
+        goto fail;
       }
       da_push(&sb, lexer->current);
       lex_consume(lexer);
@@ -167,50 +170,50 @@ Token next_token(Lexer *lexer) {
       lex_consume(lexer);
       switch (lexer->current) {
       case 'n':
-        t.as.chr = '\n';
+        t->as.chr = '\n';
         break;
       case 't':
-        t.as.chr = '\t';
+        t->as.chr = '\t';
         break;
       case 'v':
-        t.as.chr = '\v';
+        t->as.chr = '\v';
         break;
       case 'r':
-        t.as.chr = '\r';
+        t->as.chr = '\r';
         break;
       case 'f':
-        t.as.chr = '\f';
+        t->as.chr = '\f';
         break;
       case 'b':
-        t.as.chr = '\b';
+        t->as.chr = '\b';
         break;
       case 'a':
-        t.as.chr = '\a';
+        t->as.chr = '\a';
         break;
       case '\\':
-        t.as.chr = '\\';
+        t->as.chr = '\\';
         break;
       case '"':
-        t.as.chr = '"';
+        t->as.chr = '"';
         break;
       case '\'':
-        t.as.chr = '\'';
+        t->as.chr = '\'';
         break;
       case '?':
-        t.as.chr = '\?';
+        t->as.chr = '\?';
         break;
       default:
         fprintln(stderr, "%s:%zu:%zu: error: unknown escape sequence `\\%c`",
             lexer->file, lexer->cpos.row, lexer->cpos.col, lexer->current);
-        exit(1);
+        goto fail;
       }
       lex_consume(lexer);
     } else {
-      t.as.chr = lexer->current;
-      if (t.as.chr == '\'') {
+      t->as.chr = lexer->current;
+      if (t->as.chr == '\'') {
         fprintln(stderr, "%s:%zu:%zu: errror: empty string literal",
             lexer->file, lexer->cpos.row, lexer->cpos.col);
-        exit(1);
+        goto fail;
       }
       da_push(&sb, lexer->current);
       lex_consume(lexer);
@@ -218,12 +221,17 @@ Token next_token(Lexer *lexer) {
     if (lexer->current != '\'') {
       fprintln(stderr, "%s:%zu:%zu: error: unterminated string literal",
           lexer->file, lexer->cpos.row, lexer->cpos.col);
-      exit(1);
+      goto fail;
     }
     lex_consume(lexer);
     da_push(&sb, '\'');
     return_and_set_span(TK_CHAR);
   }
   lex_consume(lexer);
+end:
+  return result;
+fail:
+  result = false;
   return_and_set_span(TK_ERR);
+  goto end;
 }

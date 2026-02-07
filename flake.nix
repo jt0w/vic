@@ -20,7 +20,7 @@
             self'.packages.vl
             self'.packages.vasm
           ];
-          buildInputs = with pkgs; [uncrustify];
+          buildInputs = with pkgs; [uncrustify universal-ctags];
           shellHook = ''
             export PATH=$PATH:$PWD/build/
           '';

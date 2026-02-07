@@ -10,10 +10,10 @@ Expr gen_consume(Gen *gen) {
 
 #define push(x) da_push(p, (x))
 
-Var find_var_by_name(Gen *gen, const char *name) {
+Var *find_var_by_name(Gen *gen, const char *name) {
   for (size_t i = 0; i < gen->vars.count; ++i) {
     if (strcmp(name, gen->vars.items[i].name) == 0) {
-      return gen->vars.items[i];
+      return &gen->vars.items[i];
     }
   }
 
@@ -21,7 +21,7 @@ Var find_var_by_name(Gen *gen, const char *name) {
   exit(1);
 }
 
-size_t find_native_id_by_name(Gen *gen, const char *name) {
+int find_native_id_by_name(Gen *gen, const char *name) {
   for (size_t i = 0; i < gen->natives.count; ++i) {
     if (strcmp(name, gen->natives.items[i].items) == 0) {
       return i;
@@ -29,10 +29,11 @@ size_t find_native_id_by_name(Gen *gen, const char *name) {
   }
 
   fprintln(stderr, "error: Native `%s` not found", name);
-  exit(1);
+  return -1;
 }
 
-void gen_generate(Gen *gen, Program *p) {
+bool gen_generate(Gen *gen, Program *p) {
+  bool res = true;
   while (gen->pos <= gen->exprs.count) {
     if (gen->pos == 0)
       gen_consume(gen);
@@ -46,18 +47,19 @@ void gen_generate(Gen *gen, Program *p) {
       if (last_slash != NULL) {
         *last_slash = '\0';
       }
-      translate_file(temp_sprintf("%s/%s", root, file), &gen2, p);
+      char *file_path = temp_sprintf("%s/%s", root, file);
+      if (!translate_file(file_path, &gen2, p)) goto fail;
+
+	  breakpoint();
       da_push_mult(&gen->labels, gen2.labels.items, gen2.labels.count);
       da_push_mult(&gen->natives, gen2.natives.items, gen2.natives.count);
-      da_free(gen2.unresolved_jumps);
-      da_free(gen2.natives);
-      da_free(gen2.vars);
       break;
     }
     case EK_LABEL_DEF: {
       da_push(&gen->labels, ((Label){
                                 .pos = {p->count},
-                                .name = gen->current.args.items[0].as.str,
+								// TODO: mem leak
+                                .name = strdup(gen->current.args.items[0].as.str),
                             }));
       break;
     }
@@ -81,12 +83,14 @@ void gen_generate(Gen *gen, Program *p) {
     }
     case EK_NATIVE_DEF: {
       Token name = gen->current.args.items[0];
-      da_push(&gen->natives, sb_from_string(name.span.literal));
+	  // TODO: mem leak
+      da_push(&gen->natives, sb_from_string(strdup(name.span.literal)));
       break;
     }
     case EK_NATIVE: {
       Token name = gen->current.args.items[0];
-      size_t id = {find_native_id_by_name(gen, name.span.literal)};
+      int id = {find_native_id_by_name(gen, name.span.literal)};
+	  if (id < 0) goto fail;
       da_push(p, ((Inst){.opcode = OP_NATIVE, .operand = WORD_U64(id)}));
       break;
     }
@@ -96,7 +100,9 @@ void gen_generate(Gen *gen, Program *p) {
       if (arg.kind == TK_INT_LIT) {
         push(INST_PUSH(arg.as.num));
       } else if (arg.kind == TK_LIT) {
-        push(INST_PUSH(find_var_by_name(gen, arg.as.str).value));
+		Var *v = find_var_by_name(gen, arg.as.str);
+		if (v == NULL) goto fail;
+        push(INST_PUSH(v->value));
       } else if (arg.kind == TK_CHAR) {
         push(INST_PUSH(WORD_U64((int)arg.as.chr)));
       } else {
@@ -194,7 +200,9 @@ void gen_generate(Gen *gen, Program *p) {
       if (arg.kind == TK_INT_LIT) {
         push(INST_ALLOC(arg.as.num));
       } else if (gen->current.args.items[0].kind == TK_LIT) {
-        push(INST_ALLOC(find_var_by_name(gen, arg.as.str).value));
+		Var *v = find_var_by_name(gen, arg.as.str);
+		if (v == NULL) goto fail;
+        push(INST_ALLOC(v->value));
       }
       break;
     }
@@ -203,7 +211,9 @@ void gen_generate(Gen *gen, Program *p) {
       if (arg.kind == TK_INT_LIT) {
         push(INST_WRITE(arg.as.num));
       } else if (gen->current.args.items[0].kind == TK_LIT) {
-        push(INST_WRITE(find_var_by_name(gen, arg.as.str).value));
+		Var *v = find_var_by_name(gen, arg.as.str);
+		if (v == NULL) goto fail;
+        push(INST_WRITE(v->value));
       }
       break;
     }
@@ -212,7 +222,9 @@ void gen_generate(Gen *gen, Program *p) {
       if (arg.kind == TK_INT_LIT) {
         push(INST_READ(arg.as.num));
       } else if (gen->current.args.items[0].kind == TK_LIT) {
-        push(INST_READ(find_var_by_name(gen, arg.as.str).value));
+		Var *v = find_var_by_name(gen, arg.as.str);
+		if (v == NULL) goto fail;
+        push(INST_READ(v->value));
       }
       break;
     }
@@ -242,12 +254,14 @@ void gen_generate(Gen *gen, Program *p) {
           "FATAL ERROR: This should never happen please contact a maitainer "
           "(%s:%d)",
           __FILE__, __LINE__);
-      exit(1);
+      goto fail;
     }
     }
     gen_consume(gen);
   }
 
+
+  breakpoint();
   for (size_t i = 0; i < gen->unresolved_jumps.count; ++i) {
     UnresolvedJump jmp = gen->unresolved_jumps.items[i];
     Expr e = gen->exprs.items[jmp.expr_pos];
@@ -263,7 +277,13 @@ void gen_generate(Gen *gen, Program *p) {
     }
     if (!found) {
       log(ERROR, "Unresolved jmp %s", name);
-      exit(1);
+      goto fail;
     }
   }
+
+ end:
+  return res;
+ fail:
+  res = false;
+  goto end;
 }

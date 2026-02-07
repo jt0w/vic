@@ -52,5 +52,5 @@ typedef struct {
 
 bool par_raw_consume(Parser *parser);
 Token par_consume(Parser *parser);
-Expr parse_expr(Parser *parser);
+bool parse_expr(Parser *parser, Expr *expr);
 #endif /* end of include guard: PARSER_H */

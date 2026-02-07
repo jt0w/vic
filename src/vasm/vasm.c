@@ -11,19 +11,20 @@
 
 int main(int argc, char *argv[]) {
   shift(argv, argc);
+  Flags flags = {0};
 
-  Flag output_file = parse_str_flag("-output", "-o", "out.bin");
-  Flag input_file = parse_str_flag("-input", "-i", NULL);
+  Flag output_file = parse_str_flag(flags,"-output", "-o", "out.bin", "Output File (Default: out.bin)");
+  Flag input_file = parse_str_flag(flags, "-input", "-i", NULL, "Input file");
 
   if (!input_file.as.str) {
-    fprintln(stderr, "Usage: vasm -o <output.> -i <input.vasm>");
+    print_flags_help(flags);
     log(ERROR, "Did not provide input file");
     return 0;
   }
 
   Gen gen = {0};
   Program program = {0};
-  translate_file(input_file.as.str, &gen, &program);
+  if (!translate_file(input_file.as.str, &gen, &program)) return 1;
   FILE *bfile = fopen(output_file.as.str, "wb");
   assert(bfile != NULL);
   fwrite(&gen.natives.count, sizeof(gen.natives.count), 1, bfile);

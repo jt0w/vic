@@ -6,5 +6,5 @@
 #include "parser.h"
 #include "gen.h"
 
-void translate_file(const char *input_file, Gen *gen, Program *p);
+bool translate_file(const char *input_file, Gen *gen, Program *p);
 #endif // endif COMMON_H

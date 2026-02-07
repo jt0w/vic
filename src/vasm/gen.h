@@ -48,7 +48,6 @@ typedef struct {
   Vars vars;
 } Gen;
 
-Var find_var_by_name(Gen *gen, const char *name);
 Expr gen_consume(Gen *gen);
-void gen_generate(Gen *gen, Program *p);
+bool gen_generate(Gen *gen, Program *p);
 #endif /* end of include guard: GEN_H */

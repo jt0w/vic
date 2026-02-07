@@ -93,5 +93,6 @@ typedef struct {
 } Lexer;
 
 char lex_consume(Lexer *lexer);
-Token next_token(Lexer *lexer);
+void free_token(Token t);
+bool next_token(Lexer *lexer, Token *t);
 #endif /* end of include guard: LEXER_H */

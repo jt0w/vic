@@ -99,8 +99,25 @@ int main(int argc, char **argv) {
   rebuild_file(argv, argc);
   create_dir(build_dir);
   shift(argv, argc);
-  Flag build_examples = parse_boolean_flag("-build_examples", "-be", false);
-  Flag mode_flag = parse_str_flag("-mode", "-m", "release");
+  Flags flags = {0};
+  Flag build_examples = parse_boolean_flag(flags, "-build_examples", "-be", false, "build examples");
+  Flag mode_flag = parse_str_flag(flags, "-mode", "-m", "release", "compilation mode");
+  Flag help_flag = parse_boolean_flag(flags, "-help", "-h", false, "print help message");
+  Flag ctags_flag = parse_boolean_flag(flags, "-ctags", "-ct", false, "generate ctags (requires universal-ctags)");
+  if (help_flag.as.boolean) {
+	print_flags_help(flags);
+	return 0;
+  }
+  if (ctags_flag.as.boolean) {
+	log(INFO, "Generating ctags ...");
+	Cmd cmd = {0};
+	cmd_push(&cmd, "ctags", "-eR", "*");
+	if (!cmd_exec(&cmd)) {
+	  log(ERROR, "Failed to generate ctags");
+	  return 1;
+	}
+	log(INFO, "Generated ctags");
+  }
   if (strcmp(mode_flag.as.str, "release") == 0) {
     MODE = MODE_RELEASE;
   } else if (strcmp(mode_flag.as.str, "debug") == 0) {
@@ -110,13 +127,18 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+
+  bool failed = false;
   for (size_t i = 0; i < sizeof(TOOLS) / sizeof(TOOLS[0]); ++i) {
     log(CHIMERA_INFO, "Compiling %s", TOOLS[i].name);
     if (build_tool(TOOLS[i]) != 0)
       log(CHIMERA_INFO, "Compiled %s", TOOLS[i].name);
-    else
+    else {
       log(CHIMERA_ERROR, "Error while compiling %s", TOOLS[i].name);
+	  failed = true;
+	}
   }
+  if (failed) return 1;
 
   if (build_examples.as.boolean) {
     for (size_t i = 0; i < sizeof(EXAMPLES) / sizeof(EXAMPLES[0]); ++i) {
