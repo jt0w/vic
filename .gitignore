@@ -3,4 +3,3 @@ make
 build/
 .ccls-cache
 *.vb
-TAGS

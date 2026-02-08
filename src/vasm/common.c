@@ -11,6 +11,7 @@ bool translate_file(const char *input_file, Gen *gen, Program *p) {
     log(ERROR, "could not read `%s`", input_file);
     goto fail;
   }
+  da_push(&sb, '\0');
 
   {
     lex = (Lexer) {
@@ -27,7 +28,8 @@ bool translate_file(const char *input_file, Gen *gen, Program *p) {
 
     Parser parser = {
       .tokens = tokens,
-      .file = input_file,
+      // TODO: mem leak
+      .file = strdup(input_file),
     };
     while (parser.pos <= parser.tokens.count) {
       Expr temp = {0};

@@ -50,7 +50,6 @@ bool gen_generate(Gen *gen, Program *p) {
       char *file_path = temp_sprintf("%s/%s", root, file);
       if (!translate_file(file_path, &gen2, p)) goto fail;
 
-	  breakpoint();
       da_push_mult(&gen->labels, gen2.labels.items, gen2.labels.count);
       da_push_mult(&gen->natives, gen2.natives.items, gen2.natives.count);
       break;
@@ -260,8 +259,6 @@ bool gen_generate(Gen *gen, Program *p) {
     gen_consume(gen);
   }
 
-
-  breakpoint();
   for (size_t i = 0; i < gen->unresolved_jumps.count; ++i) {
     UnresolvedJump jmp = gen->unresolved_jumps.items[i];
     Expr e = gen->exprs.items[jmp.expr_pos];

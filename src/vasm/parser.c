@@ -50,7 +50,6 @@ end:
   temp_reset();
   return result;
 fail:
-  breakpoint();
   result = false;
   goto end;
 }
