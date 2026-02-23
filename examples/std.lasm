@@ -1,0 +1,148 @@
+%native write
+dec:
+    swap 1
+    push 1
+    sub
+    swap 1
+    ret
+
+inc:
+    swap 1
+    push 1
+    add
+    swap 1
+    ret
+; args: A B
+; checks A > B
+gt:
+    swap 2
+GTloop:
+    ; A == B
+    dup 0
+    dup 2
+    eq
+    jnz GTno
+
+    ; A == 0
+    dup 0
+    push 0
+    eq
+    jnz GTno
+
+    swap 1
+
+    ; B == 0
+    dup 0
+    push 0
+    eq
+    jnz GTyes
+
+    call dec
+    swap 1
+    call dec
+    jmp GTloop
+GTyes:
+    pop
+    pop
+    push 1
+    swap 1
+    ret
+GTno:
+    pop
+    pop
+    push 0
+    swap 1
+    ret
+
+; args: A B
+; checks A < B
+lt:
+    swap 2
+LTloop:
+    ; A == B
+    dup 0
+    dup 2
+    eq
+    jnz LTno
+
+    ; A == 0
+    dup 0
+    push 0
+    eq
+    jnz LTyes
+
+    swap 1
+
+    ; B == 0
+    dup 0
+    push 0
+    eq
+    jnz LTno
+
+    call dec
+    swap 1
+    call dec
+    jmp LTloop
+LTyes:
+    pop
+    pop
+    push 1
+    swap 1
+    ret
+LTno:
+    pop
+    pop
+    push 0
+    swap 1
+    ret
+
+
+allocChar:
+    swap 1
+    alloc 1
+    dup 0
+    swap 2
+    write 1
+    swap 1
+    ret
+
+printChar:
+    swap 1
+    call allocChar
+    push 1
+    native write
+    ret
+
+printDigit:
+    swap 1
+    push 48
+    add
+    call allocChar
+    push 1
+    native write
+    ret
+
+printU64:
+; <counter>
+; <U64>
+; <U64>
+; <ret>
+dup 0
+push 0
+loop:
+call inc
+swap 1
+push 10
+div
+push 0
+eq
+swap 1
+jz loop
+printing:
+done:
+    ret
+
+flush:
+    push '\n'
+    call printChar
+    ret

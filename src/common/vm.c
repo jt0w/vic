@@ -75,6 +75,14 @@ const Instruction_Mapping INST_MAP[OPCODE_COUNT] = {
       .outputs = {TYPE_INT},
       .exe = vm_div,
     },
+    [OP_MOD] = {
+      .code = OP_MOD,
+      .name = "mod",
+      .has_operand = false,
+      .inputs = {TYPE_INT, TYPE_INT},
+      .outputs = {TYPE_INT},
+      .exe = vm_mod,
+    },
     [OP_EQ] = {
       .code = OP_EQ,
       .name = "eq",

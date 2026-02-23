@@ -83,6 +83,9 @@ int main(int argc, char *argv[]) {
     while (vm.pc < vm.program.count) {
       res = vm_next(&vm);
 #ifdef DEBUG_MODE
+      Inst inst = vm.program.items[vm.pc];
+      const char *name = INST_MAP[(int)inst.opcode].name;
+      chimera_log(INFO, "Current Inst: %s %u", name, inst.operand.as_u64);
       dump_vm(vm);
       getchar();
 #endif

@@ -48,18 +48,20 @@ bool gen_generate(Gen *gen, Program *p) {
         *last_slash = '\0';
       }
       char *file_path = temp_sprintf("%s/%s", root, file);
-      if (!translate_file(file_path, &gen2, p)) goto fail;
+      if (!translate_file(file_path, &gen2, p))
+        goto fail;
 
       da_push_mult(&gen->labels, gen2.labels.items, gen2.labels.count);
       da_push_mult(&gen->natives, gen2.natives.items, gen2.natives.count);
       break;
     }
     case EK_LABEL_DEF: {
-      da_push(&gen->labels, ((Label){
-                                .pos = {p->count},
-								// TODO: mem leak
-                                .name = strdup(gen->current.args.items[0].as.str),
-                            }));
+      da_push(&gen->labels,
+              ((Label){
+                  .pos = {p->count},
+                  // TODO: mem leak
+                  .name = strdup(gen->current.args.items[0].as.str),
+              }));
       break;
     }
     case EK_VAR_DEF: {
@@ -82,14 +84,15 @@ bool gen_generate(Gen *gen, Program *p) {
     }
     case EK_NATIVE_DEF: {
       Token name = gen->current.args.items[0];
-	  // TODO: mem leak
+      // TODO: mem leak
       da_push(&gen->natives, sb_from_string(strdup(name.span.literal)));
       break;
     }
     case EK_NATIVE: {
       Token name = gen->current.args.items[0];
       int id = {find_native_id_by_name(gen, name.span.literal)};
-	  if (id < 0) goto fail;
+      if (id < 0)
+        goto fail;
       da_push(p, ((Inst){.opcode = OP_NATIVE, .operand = WORD_U64(id)}));
       break;
     }
@@ -99,8 +102,9 @@ bool gen_generate(Gen *gen, Program *p) {
       if (arg.kind == TK_INT_LIT) {
         push(INST_PUSH(arg.as.num));
       } else if (arg.kind == TK_LIT) {
-		Var *v = find_var_by_name(gen, arg.as.str);
-		if (v == NULL) goto fail;
+        Var *v = find_var_by_name(gen, arg.as.str);
+        if (v == NULL)
+          goto fail;
         push(INST_PUSH(v->value));
       } else if (arg.kind == TK_CHAR) {
         push(INST_PUSH(WORD_U64((int)arg.as.chr)));
@@ -132,7 +136,7 @@ bool gen_generate(Gen *gen, Program *p) {
       break;
     }
     case EK_SUB: {
-      push(INST_ADD);
+      push(INST_SUB);
       break;
     }
     case EK_MULT: {
@@ -143,12 +147,15 @@ bool gen_generate(Gen *gen, Program *p) {
       push(INST_DIV);
       break;
     }
+    case EK_MOD: {
+      push(INST_MOD);
+      break;
+    }
     case EK_EQ: {
       push(INST_EQ);
       break;
     }
     case EK_JMP: {
-      assert(gen->current.args.count == 1);
       Token arg = gen->current.args.items[0];
       if (arg.kind == TK_LIT) {
         da_push(&gen->unresolved_jumps, ((UnresolvedJump){
@@ -173,7 +180,6 @@ bool gen_generate(Gen *gen, Program *p) {
       } else if (arg.kind == TK_INT_LIT) {
         push(INST_JZ(arg.as.num));
       }
-
       break;
     }
     case EK_JNZ: {
@@ -199,8 +205,9 @@ bool gen_generate(Gen *gen, Program *p) {
       if (arg.kind == TK_INT_LIT) {
         push(INST_ALLOC(arg.as.num));
       } else if (gen->current.args.items[0].kind == TK_LIT) {
-		Var *v = find_var_by_name(gen, arg.as.str);
-		if (v == NULL) goto fail;
+        Var *v = find_var_by_name(gen, arg.as.str);
+        if (v == NULL)
+          goto fail;
         push(INST_ALLOC(v->value));
       }
       break;
@@ -210,8 +217,9 @@ bool gen_generate(Gen *gen, Program *p) {
       if (arg.kind == TK_INT_LIT) {
         push(INST_WRITE(arg.as.num));
       } else if (gen->current.args.items[0].kind == TK_LIT) {
-		Var *v = find_var_by_name(gen, arg.as.str);
-		if (v == NULL) goto fail;
+        Var *v = find_var_by_name(gen, arg.as.str);
+        if (v == NULL)
+          goto fail;
         push(INST_WRITE(v->value));
       }
       break;
@@ -221,8 +229,9 @@ bool gen_generate(Gen *gen, Program *p) {
       if (arg.kind == TK_INT_LIT) {
         push(INST_READ(arg.as.num));
       } else if (gen->current.args.items[0].kind == TK_LIT) {
-		Var *v = find_var_by_name(gen, arg.as.str);
-		if (v == NULL) goto fail;
+        Var *v = find_var_by_name(gen, arg.as.str);
+        if (v == NULL)
+          goto fail;
         push(INST_READ(v->value));
       }
       break;
@@ -278,9 +287,9 @@ bool gen_generate(Gen *gen, Program *p) {
     }
   }
 
- end:
+end:
   return res;
- fail:
+fail:
   res = false;
   goto end;
 }

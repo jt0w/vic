@@ -26,6 +26,7 @@ typedef enum {
   OP_SUB,
   OP_MULT,
   OP_DIV,
+  OP_MOD,
 
   OP_EQ,
 
@@ -56,6 +57,7 @@ typedef struct {
 #define INST_SUB      ((Inst){.opcode = OP_SUB                  })
 #define INST_MULT     ((Inst){.opcode = OP_MULT                 })
 #define INST_DIV      ((Inst){.opcode = OP_DIV                  })
+#define INST_MOD      ((Inst){.opcode = OP_MOD                  })
 #define INST_EQ       ((Inst){.opcode = OP_EQ                   })
 #define INST_JMP(x)   ((Inst){.opcode = OP_JMP,   .operand = (x)})
 #define INST_JNZ(x)   ((Inst){.opcode = OP_JNZ,   .operand = (x)})

@@ -42,9 +42,6 @@ bool translate_file(const char *input_file, Gen *gen, Program *p) {
   }
 end:
   if (sb.items != NULL) da_free(sb);
-  for (size_t i = 0; i < tokens.count; ++i) {
-    free_token(tokens.items[i]);
-  }
   if (tokens.items != NULL) da_free(tokens);
   return result;
 fail:

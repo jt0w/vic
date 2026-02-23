@@ -3,26 +3,26 @@ jmp main
 
 main:
 push 'h'
-call print
+call printChar
 push 'e'
-call print
+call printChar
 push 'l'
-call print
+call printChar
 push 'l'
-call print
+call printChar
 push 'o'
-call print
+call printChar
 push ' '
-call print
+call printChar
 push 'w'
-call print
+call printChar
 push 'o'
-call print
+call printChar
 push 'r'
-call print
+call printChar
 push 'l'
-call print
+call printChar
 push 'd'
-call print
+call printChar
 push '\n'
-call print
+call printChar

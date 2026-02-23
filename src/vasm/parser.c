@@ -156,6 +156,11 @@ bool parse_expr(Parser *parser, Expr *expr) {
     par_consume(parser);
     break;
   }
+  case TK_MOD: {
+    expr->kind = EK_MOD;
+    par_consume(parser);
+    break;
+  }
   case TK_EQ: {
     expr->kind = EK_EQ;
     par_consume(parser);

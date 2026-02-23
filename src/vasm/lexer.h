@@ -34,6 +34,7 @@ typedef enum {
   TK_SUB,
   TK_MULT,
   TK_DIV,
+  TK_MOD,
   TK_EQ,
   TK_JMP,
   TK_JZ,

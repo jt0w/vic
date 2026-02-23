@@ -14,6 +14,7 @@ typedef enum {
   EK_SUB,
   EK_MULT,
   EK_DIV,
+  EK_MOD,
   EK_EQ,
   EK_JMP,
   EK_JZ,
