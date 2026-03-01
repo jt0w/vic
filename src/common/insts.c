@@ -75,6 +75,9 @@ Result vm_div(VM *vm, Inst inst) {
   (void)inst;
   if (vm->stack.count < 2)
     return RESULT_ERROR_STACK_UNDERFLOW;
+  if (vm->stack.items[vm->stack.count - 1].as_u64 == 0) {
+    return RESULT_ERROR_DIV_BY_ZERO;
+  }
   vm->stack.items[vm->stack.count - 2].as_u64 /=
       vm->stack.items[vm->stack.count - 1].as_u64;
   vm->stack.count--;
@@ -85,6 +88,9 @@ Result vm_mod(VM *vm, Inst inst) {
   (void)inst;
   if (vm->stack.count < 2)
     return RESULT_ERROR_STACK_UNDERFLOW;
+  if (vm->stack.items[vm->stack.count - 1].as_u64 == 0) {
+    return RESULT_ERROR_DIV_BY_ZERO;
+  }
   vm->stack.items[vm->stack.count - 2].as_u64 %=
       vm->stack.items[vm->stack.count - 1].as_u64;
   vm->stack.count--;

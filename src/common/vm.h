@@ -89,6 +89,7 @@ typedef enum {
   RESULT_ERROR_MEMORY_OVERFLOW,
   RESULT_ERROR_ILLEGAL_MEMORY_ACCESS,
   RESULT_ERROR_ILLEGAL_NATIVE,
+  RESULT_ERROR_DIV_BY_ZERO,
 } Result;
 const char *result_to_str(Result r);
 

@@ -1,5 +1,5 @@
 jmp main
-%use "utils.lasm"
+%use "std.lasm"
 
 main:
 push 'h'

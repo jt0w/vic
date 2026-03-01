@@ -122,24 +122,45 @@ printDigit:
     native write
     ret
 
+
+
+;; b
+;; a
+
+;; <a / b>
+;; <a % b>
+    divRem:
+    swap 2
+    swap 1
+    dup 1
+    dup 1
+    div
+    swap 2
+    swap 1
+    mod
+    swap 2
+    ret
+
+
+; completly vibe coded cause me big dum dum
 printU64:
-; <counter>
-; <U64>
-; <U64>
-; <ret>
-dup 0
-push 0
-loop:
-call inc
-swap 1
-push 10
-div
-push 0
-eq
-swap 1
-jz loop
-printing:
-done:
+    swap 1                  ; [n, ret_addr]
+
+    dup 0                   ; [n, n, ret_addr]
+    push 10                 ; [10, n, n, ret_addr]  -- B=10 on TOS, A=n below: lt(A,B) = n<10
+    call lt                 ; [n<10, n, ret_addr]
+    jnz PU64Base            ; if n < 10, print directly
+
+    ; recursive case: n >= 10
+    push 10                 ; [10, n, ret_addr]  -- b=10 on TOS, a=n below
+    call divRem             ; [n%10, n/10, ret_addr]  -- quotient on TOS
+    call printU64           ; recurse on quotient, leaves [n%10, ret_addr]
+    call printDigit         ; print remainder
+    ret
+
+PU64Base:
+    ; stack: [n, ret_addr]
+    call printDigit
     ret
 
 flush:

@@ -75,6 +75,11 @@ const Tool EXAMPLES[] = {
     .src = example_dir "hello_world.vasm",
     .out = example_dir "hello_world.vb",
   },
+  {
+    .name = "fib",
+    .src = example_dir "fib.vasm",
+    .out = example_dir "fib.vb",
+  },
 };
 
 int build_tool(Tool tool) {

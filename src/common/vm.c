@@ -187,6 +187,8 @@ const char *result_to_str(Result r) {
     return "RESULT_ERROR_ILLEGAL_MEMORY_ACCESS";
   case RESULT_ERROR_ILLEGAL_NATIVE:
     return "RESULT_ERROR_ILLEGAL_NATIVE";
+  case RESULT_ERROR_DIV_BY_ZERO:
+    return "RESULT_ERROR_DIV_BY_ZERO";
   default:
     assert(0 && "UNREACHABLE: result_to_str");
   }
