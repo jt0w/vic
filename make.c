@@ -107,9 +107,9 @@ int main(int argc, char **argv) {
   Flag ctags_flag =
       parse_boolean_flag(flags, "-ctags", "-ct", false,
                          "generate ctags (requires universal-ctags)");
-  if (!flags_check(flags)) {
+  if (!flags_check(flags, argc)) {
     StringBuilder sb = {0};
-    flags_err_str(flags, &sb);
+    flags_err_str(flags, &sb, argv, argc);
     sb_push(&sb, '\0');
     log(ERROR, sb.items);
     da_free(sb);
