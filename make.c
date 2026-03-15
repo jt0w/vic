@@ -24,19 +24,15 @@ typedef struct {
 
 const Tool TOOLS[] = {
     {.name = "vl", .src = src_dir "vl/vl.c", .out = build_dir "vl"},
-    {.name = "vasm",
-     .src =
-         src_dir "vasm/vasm.c " src_dir "vasm/common.c " src_dir
-                 "vasm/lexer.c " src_dir "vasm/parser.c " src_dir "vasm/gen.c ",
-     .out = build_dir "vasm"},
+    {.name = "vasm", .src = src_dir "vasm/*.c", .out = build_dir "vasm"},
     {
         .name = "devasm",
-        .src = src_dir "devasm/devasm.c ",
+        .src = src_dir "devasm/*.c ",
         .out = build_dir "devasm",
     },
     {
         .name = "vam",
-        .src = src_dir "vam/vam.c ",
+        .src = src_dir "vam/*.c ",
         .out = build_dir "vam",
     },
 };
