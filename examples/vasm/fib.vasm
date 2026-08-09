@@ -1,0 +1,42 @@
+jmp main
+%use "std.lasm"
+%native write
+
+fib:
+    swap 1
+    dup 0
+    push 1
+    eq
+    jnz endCase
+    dup 0
+    push 2
+    eq
+    jnz endCase
+
+    dup 0
+    dup 0
+    push 1
+    sub
+    call fib
+    swap 1
+    push 2
+    sub
+    call fib
+    add
+
+    done:
+    swap 1
+    pop
+    swap 1
+    ret
+    endCase:
+    pop
+    push 1
+    swap 1
+    ret
+
+main:
+    push 35
+    call fib
+    call printU64
+    call flush

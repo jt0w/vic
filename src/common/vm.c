@@ -169,6 +169,15 @@ Result native_write(VM *vm) {
   return RESULT_OK;
 }
 
+Result native_exit(VM *vm) {
+  if (vm->stack.count < 1)
+    return RESULT_ERROR_STACK_UNDERFLOW;
+
+  uint8_t code = vm->stack.items[vm->stack.count - 1].as_u64;
+  exit(code);
+}
+
+
 const char *result_to_str(Result r) {
   switch (r) {
   case RESULT_OK:

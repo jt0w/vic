@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
   }
   fwrite(program.items, sizeof(*program.items), program.count, bfile);
   fclose(bfile);
-  println("Vism %s", VERSION);
+  println("Vasm %s", VERSION);
   da_free(gen.exprs);
   da_free(gen.labels);
   da_free(gen.natives);

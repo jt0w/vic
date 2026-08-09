@@ -68,7 +68,9 @@ int main(int argc, char *argv[]) {
 
       if (strcmp(buf, "write") == 0) {
         da_push(&vm.natives, native_write);
-      } else {
+      } else if (strcmp(buf, "exit") == 0) {
+        da_push(&vm.natives, native_exit);
+      }else {
         log(ERROR, "Unknown native: %s", buf);
         goto fail;
       }

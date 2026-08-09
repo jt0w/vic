@@ -19,19 +19,21 @@ int main(int argc, char **argv) {
   }
 
   VM_NativeNames natives = {0};
-  size_t natives_count;
-  if (fread(&natives_count, sizeof(natives_count), 1, file) != 1) {
+  size_t *natives_count = malloc(sizeof(size_t));
+  if (fread(natives_count, sizeof(natives_count), 1, file) != 1) {
     log(ERROR, "natives_count couldn't be read from file");
     return 1;
   }
-  for (size_t i = 0; i < natives_count; ++i) {
-    size_t char_count;
-    if (fread(&char_count, sizeof(char_count), 1, file) != 1)  {
+  log(INFO, "natives_count = %zu", *natives_count);
+  for (size_t i = 0; i < *natives_count; ++i) {
+    size_t *char_count = malloc(sizeof(size_t));
+	log(INFO, "%p", char_count);
+    if (fread(char_count, sizeof(char_count), 1, file) != 1)  {
       log(ERROR, "char_count couldn't be read from file");
       return 1;
     }
-    char *buf = malloc(char_count + 1);
-    if (fread(buf, sizeof(char), char_count, file) != char_count) {
+    char *buf = malloc(*char_count + 1);
+    if (fread(buf, sizeof(char), *char_count, file) != *char_count) {
       log(ERROR, "name of native couldn't be read from file");
       return 1;
     }

@@ -151,8 +151,11 @@ typedef struct {
 typedef struct {
   size_t natives_count;
   VM_NativeNames natives;
+  // TODO: Make this have some sort of storage for constants like strings
+  // const char *data;
   Program program;
 } VM_BinFile;
 
 Result native_write(VM *vm);
+Result native_exit(VM *vm);
 #endif // _VM_H
