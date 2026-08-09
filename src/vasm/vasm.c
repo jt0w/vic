@@ -10,7 +10,7 @@
 #define VERSION "0.0.1"
 
 int main(int argc, char *argv[]) {
-  shift(argv, argc);
+  const char *prog_name = shift(argv, argc);
   Flags flags = {0};
 
   Flag output_file = parse_str_flag(flags,"-output", "-o", "out.bin", "Output File (Default: out.bin)");
@@ -22,21 +22,23 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  size_t byte_count = 0;
   Gen gen = {0};
   Program program = {0};
   if (!translate_file(input_file.as.str, &gen, &program)) return 1;
   FILE *bfile = fopen(output_file.as.str, "wb");
   assert(bfile != NULL);
-  fwrite(&gen.natives.count, sizeof(gen.natives.count), 1, bfile);
+  byte_count += fwrite(&gen.natives.count, sizeof(gen.natives.count), 1, bfile);
   for (size_t i = 0; i < gen.natives.count; ++i) {
-    fwrite(&gen.natives.items[i].count, sizeof(gen.natives.items[i].count), 1,
+    byte_count += fwrite(&gen.natives.items[i].count, sizeof(gen.natives.items[i].count), 1,
            bfile);
-    fwrite(gen.natives.items[i].items, sizeof(*gen.natives.items[i].items),
+    byte_count += fwrite(gen.natives.items[i].items, sizeof(*gen.natives.items[i].items),
            gen.natives.items[i].count, bfile);
   }
-  fwrite(program.items, sizeof(*program.items), program.count, bfile);
+  byte_count += fwrite(program.items, sizeof(*program.items), program.count, bfile);
   fclose(bfile);
-  println("Vasm %s", VERSION);
+  println("%s %s", prog_name, VERSION);
+  println("Written %zu bytes", byte_count);
   da_free(gen.exprs);
   da_free(gen.labels);
   da_free(gen.natives);

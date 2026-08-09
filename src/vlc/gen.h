@@ -38,6 +38,7 @@ Program gen_gen(Gen *g);
 
 void gen_stmt(Gen *g, Program *p, Stmt s);
 void gen_decl(Gen *g, Program *p, Stmt s);
+void gen_if_cond(Gen *g, Program *p, Stmt s);
 void gen_expr(Gen *g, Program *p, Expr e);
 void gen_funcall(Gen *g, Program *p, Stmt s);
 #endif // endif GEN_H

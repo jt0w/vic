@@ -11,7 +11,7 @@
 
 #define VERSION "0.0.1-beta"
 int main(int argc, char **argv) {
-  shift(argv, argc);
+  const char *prog_name = shift(argv, argc);
   Flags flags = {0};
 
   Flag help_flag = parse_boolean_flag(flags, "-help", "-h", false,
@@ -104,21 +104,24 @@ int main(int argc, char **argv) {
 
   }
 
+  size_t byte_count = 0;
   {
+
     FILE *bfile = fopen(output_file.as.str, "wb");
     assert(bfile != NULL);
-    fwrite(&natives_c, sizeof(natives_c), 1, bfile);
+    byte_count += fwrite(&natives_c, sizeof(natives_c), 1, bfile);
     for (size_t i = 0; i < natives_c; ++i) {
-      fwrite(&natives[i].name.count, sizeof(gen.natives[i].name.count), 1,
+      byte_count += fwrite(&natives[i].name.count, sizeof(gen.natives[i].name.count), 1,
              bfile);
-      fwrite(gen.natives[i].name.items, sizeof(*gen.natives[i].name.items),
+      byte_count += fwrite(gen.natives[i].name.items, sizeof(*gen.natives[i].name.items),
              gen.natives[i].name.count, bfile);
     }
-    fwrite(program.items, sizeof(*program.items), program.count, bfile);
+    byte_count += fwrite(program.items, sizeof(*program.items), program.count, bfile);
     fclose(bfile);
   }
 
-  println("vlc %s", VERSION);
+  println("%s %s", prog_name, VERSION);
+  println("Written %zu bytes", byte_count);
 done:
   return res;
 fail:

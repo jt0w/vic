@@ -76,6 +76,33 @@ FunctionDecl parse_fun(Parser *p) {
   return f;
 }
 
+Cond parse_cond(Parser *p) {
+  Cond c = {0};
+  c.lhs = malloc(sizeof(*c.lhs));
+  *c.lhs = parse_expr(p);
+  if (eq(p->t, "=")) {
+	par_skip(p, "=");
+	c.op = COND_OP_EQ;
+  }
+  c.rhs = malloc(sizeof(*c.rhs));
+  *c.rhs = parse_expr(p);
+  return c;
+}
+
+IfCond parse_ifcond(Parser *p) {
+  IfCond i = {0};
+  par_skip(p, "if");
+  par_skip(p, "(");
+  i.cond = parse_cond(p);
+  par_skip(p, ")");
+  par_skip(p, "{");
+  while (!eq(p->t, "}")) {
+	da_push(&i.body, parse_stmt(p));
+  }
+  par_skip(p, "}");
+  return i;
+}
+
 Stmt parse_stmt(Parser *p) {
   Stmt s = {0};
   if (p->tks.items[1].kind != TK_EOF) {
@@ -84,7 +111,10 @@ Stmt parse_stmt(Parser *p) {
       s.kind = SK_DECL;
       s.decl.kind = DK_FUNC;
       s.decl.fun = parse_fun(p);
-    } else if (eq(next, "(")) {
+    } else if (eq(p->t, "if")) {
+	  s.kind = SK_IF_COND;
+	  s.ifCond = parse_ifcond(p);
+	} else if (eq(next, "(")) {
       s.kind = SK_FUNCALL;
       s.funcall = parse_funcall(p);
     } else {

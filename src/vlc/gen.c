@@ -69,6 +69,9 @@ void gen_stmt(Gen *g, Program *p, Stmt s) {
   case SK_FUNCALL: {
     gen_funcall(g, p, s);
   } break;
+  case SK_IF_COND: {
+	gen_if_cond(g, p, s);
+  } break;
   default:
     log(ERROR, "unreachable: gen_stmt");
     abort();
@@ -91,6 +94,18 @@ void gen_decl(Gen *g, Program *p, Stmt s) {
   }
 }
 
+void gen_if_cond(Gen *g, Program *p, Stmt s) {
+  gen_expr(g, p, (Expr){.kind = EK_COND, .cond = s.ifCond.cond});
+
+  push(INST_JNZ(WORD_U64(p->count + 1)));
+  size_t jmp_index = p->count;
+  push(INST_JMP(WORD_U64(0)));
+  da_foreach (Stmt, st, s.ifCond.body) {
+    gen_stmt(g, p, *st);
+  }
+  p->items[jmp_index].operand = WORD_U64(p->count);
+}
+
 int find_native_ptr(Gen *g, VM_Internal n) {
   for (size_t i = 0; i < g->natives_c; ++i) {
     if (g->natives[i].ptr == n) {
@@ -99,6 +114,7 @@ int find_native_ptr(Gen *g, VM_Internal n) {
   }
   return -1;
 }
+
 
 void gen_funcall(Gen *g, Program *p, Stmt s) {
   UnresolvedJmp j = {0};
@@ -117,7 +133,6 @@ void gen_funcall(Gen *g, Program *p, Stmt s) {
     push(INST_NATIVE(WORD_U64(id)));
   } else if (strcmp(j.funcall_name, "exit") == 0) {
     int id = find_native_ptr(g, native_exit);
-    println("exit id %d", id);
     assert(id >= 0);
     push(INST_NATIVE(WORD_U64(id)));
   } else {
@@ -141,6 +156,18 @@ void gen_expr(Gen *g, Program *p, Expr e) {
   } break;
   case EK_CHAR: {
     push(INST_PUSH(WORD_U64((int)e.chr)));
+  } break;
+  case EK_COND: {
+	gen_expr(g, p, *e.cond.lhs);
+	gen_expr(g, p, *e.cond.rhs);
+	switch (e.cond.op) {
+	case COND_OP_EQ: {
+	  push(INST_EQ);
+	} break;
+	default:
+	  log(ERROR, "unreachable: e.cond.op");
+	  abort();
+	}
   } break;
   default:
     log(ERROR, "unreachable: gen_expr");

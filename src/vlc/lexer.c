@@ -14,7 +14,7 @@ bool advance(Lexer *lex) {
   return true;
 }
 
-static const char *keywords[] = {"func"};
+static const char *keywords[] = {"func", "if"};
 static const char keywords_size = sizeof(keywords) / sizeof(keywords[0]);
 bool is_keyword(char *name) {
   for (size_t i = 0; i < keywords_size; ++i) {
